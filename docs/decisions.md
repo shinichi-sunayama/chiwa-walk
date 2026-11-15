@@ -16,3 +16,13 @@
 - **バンドル ID**：`com.ohagikinakokobo.osanpo`（iPhone）・`com.ohagikinakokobo.osanpo.watchkitapp`（Watch）。版は 1.0.0 から。
 - **作り方**：pickle-score と同じく Mac なし（XcodeGen ＋ GitHub Actions のクラウドの Mac → TestFlight）。iOS 17／watchOS 10 以上。
 - **守ること**：健康について医療的な判断や助言はしない（気になるときは動物病院へ）。位置情報は使わない。記録は端末とユーザー自身の iCloud の中だけ。
+
+## 2026-11-16（2回目）仕様書承認・試作1
+
+- **仕様書 v0.2 を承認**（ユーザー）。**地図（道すじの記録）とアルバムは最初の版に入れない**（競合の不満の最多が道すじ記録の失敗、Watch での位置取得にワークアウトとヘルスケアの許可が要る、電池、自宅の場所、写真の容量と同期）。あとで足す候補：オンオフできる地図、「その日の1枚」の写真。
+- **アイコンは Gemini で描く**（ユーザー）。指示文は `docs/art/icon.md`。決まるまでは仮のアイコン（`tools/make_placeholder_icon.py`）。
+- **記録の種類** [仮]：おしっこ・うんち・おみず・ごはん（2×2 の大きなボタン）＋おさんぽ スタート／おわり。散歩は時刻だけで、4時間たっても「おわり」がなければ散歩中とみなさない。
+- **iPhone の保存**：Core Data（モデルはコードで定義）。家族共有に備えて「家（Household）→犬→記録」のつながりにした。iCloud は試作2でオンにする（今は端末の中だけ）。
+- **Watch ↔ iPhone**：Watch は自分の中に先に保存し、iPhone へは順番待ちの送信（transferUserInfo）で送る（iPhone が家にあっても後で届く）。iPhone からは犬と最近2日分＋種類ごとの最新の記録を送る（applicationContext）。取り消しは「この記録を消す」を送る。同じ記録が二重に入らないよう、記録ごとの番号（UUID）で見分ける。
+- **フォント**：犬の名前にどんな漢字でも使えるよう、M PLUS Rounded 1c Bold を文字を減らさず全部入れた（約 3.5MB）。
+- **公開リポジトリ** https://github.com/shinichi-sunayama/chiwa-walk を作成。Linux のテスト（WalkCore 13件）と、クラウドの Mac での署名なしの組み立てが成功（2026-11-16、run 43777013808／43777013807）。
