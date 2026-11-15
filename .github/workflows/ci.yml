@@ -1,0 +1,21 @@
+# Tests of the walk-log logic (apple/WalkCore) on Linux.
+# Linux runners are free for public repositories and do not use macOS minutes.
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  walkcore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift --version
+      - run: swift test
+        working-directory: apple/WalkCore
