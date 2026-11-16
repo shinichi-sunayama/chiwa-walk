@@ -1,5 +1,10 @@
 import SwiftUI
 import WalkCore
+#if os(watchOS)
+import WatchKit
+#else
+import UIKit
+#endif
 
 /// Colors and fonts shared by the iPhone and Watch apps (the workshop's cream / sky palette).
 enum Theme {
@@ -82,6 +87,21 @@ extension Color {
     }
 }
 
+/// The picture on a record button: the workshop's illustration (assets/kinds/<kind>.png, drawn with Gemini)
+/// when it exists, otherwise the emoji.
+struct KindIcon: View {
+    var kind: EventKind
+    var size: CGFloat
+
+    var body: some View {
+        if let image = UIImage(named: "kind_\(kind.rawValue)") {
+            Image(uiImage: image).resizable().scaledToFit().frame(width: size * 1.25, height: size * 1.25)
+        } else {
+            Text(kind.emoji).font(.system(size: size))
+        }
+    }
+}
+
 /// Raised button with a darker "lip" under it, pressed down when tapped.
 struct LipButtonStyle: ButtonStyle {
     var fill: Color
@@ -114,16 +134,30 @@ struct LipButtonStyle: ButtonStyle {
     }
 }
 
-/// Round dog picture (one of the workshop's five dogs, or a paw print).
+/// Round dog picture: the user's own photo if set, otherwise one of the workshop's five dogs or a paw print.
 struct DogFace: View {
     var avatar: Avatar
+    var photo: Data? = nil
     var size: CGFloat
     var selected: Bool = true
+
+    init(avatar: Avatar, photo: Data? = nil, size: CGFloat, selected: Bool = true) {
+        self.avatar = avatar
+        self.photo = photo
+        self.size = size
+        self.selected = selected
+    }
+
+    init(dog: Dog, size: CGFloat, selected: Bool = true) {
+        self.init(avatar: dog.avatar, photo: dog.photo, size: size, selected: selected)
+    }
 
     var body: some View {
         ZStack {
             Circle().fill(selected ? Theme.card : Theme.chip)
-            if let name = avatar.imageName {
+            if let photo, let image = UIImage(data: photo) {
+                Image(uiImage: image).resizable().scaledToFill()
+            } else if let name = avatar.imageName {
                 Image(name).resizable().scaledToFit().padding(size * 0.06)
             } else {
                 Image(systemName: "pawprint.fill")

@@ -23,10 +23,17 @@ final class PhoneSync: NSObject, WCSessionDelegate {
         let session = WCSession.default
         guard session.activationState == .activated, session.isPaired, session.isWatchAppInstalled else { return }
         let now = Date()
+        // Photos go to the Watch as small thumbnails (a few KB each) inside the snapshot.
+        let dogs = model.dogs.map { dog -> Dog in
+            var d = dog
+            d.photo = dog.photo.flatMap { PhotoTools.squareJPEG(from: $0, side: 96, quality: 0.7) }
+            return d
+        }
         let snapshot = WatchSync.Snapshot(
-            dogs: model.dogs,
+            dogs: dogs,
             events: WatchSync.snapshotEvents(dogs: model.dogs, events: model.events, now: now),
-            madeAt: now)
+            madeAt: now,
+            buttons: model.buttons)
         if var dict = try? WatchSync.encode(snapshot) {
             dict["author"] = model.authorName // records made on the Watch carry the same name
             try? session.updateApplicationContext(dict)

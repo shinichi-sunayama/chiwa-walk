@@ -9,6 +9,8 @@ import WatchConnectivity
 final class WatchStore: NSObject, ObservableObject {
     @Published private(set) var dogs: [Dog] = []
     @Published private(set) var events: [WalkEvent] = []
+    /// Buttons chosen on the iPhone (おしっこ・うんち, plus おみず・ごはん if turned on).
+    @Published private(set) var buttons: [EventKind] = EventKind.standardButtons
     @Published var selectedDogIDs: Set<UUID> = [] {
         didSet { UserDefaults.standard.set(selectedDogIDs.map(\.uuidString), forKey: "selectedDogs") }
     }
@@ -81,6 +83,7 @@ final class WatchStore: NSObject, ObservableObject {
     private func rebuild() {
         let snap = saved.snapshot
         dogs = (snap?.dogs ?? []).sorted { $0.order < $1.order }
+        buttons = snap?.buttons ?? EventKind.standardButtons
         // Keep only own events from the last 3 days; older ones are on the iPhone already (or will be).
         let cutoff = Date.now.addingTimeInterval(-3 * 86400)
         saved.own.removeAll { $0.date < cutoff }

@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 import WalkCore
 
@@ -15,7 +16,7 @@ struct SettingsView: View {
                     ForEach(model.dogs) { dog in
                         Button { editingDog = dog } label: {
                             HStack(spacing: 12) {
-                                DogFace(avatar: dog.avatar, size: 40)
+                                DogFace(dog: dog, size: 40)
                                 Text(dog.name).foregroundStyle(Theme.text)
                                 Spacer()
                                 Image(systemName: "chevron.right").foregroundStyle(Theme.muted)
@@ -30,6 +31,15 @@ struct SettingsView: View {
                         Spacer()
                         if model.dogs.count > 1 { EditButton().font(Theme.font(13)) }
                     }
+                }
+
+                Section {
+                    Toggle("💧 おみず", isOn: extraBinding(.water))
+                    Toggle("🍽️ ごはん", isOn: extraBinding(.food))
+                } header: {
+                    Text("きろくボタン")
+                } footer: {
+                    Text("おしっこ・うんちは いつも でます。おみず・ごはんも きろくしたいときは オンに（Apple Watch にも はんえい）。")
                 }
 
                 Section {
@@ -60,7 +70,7 @@ struct SettingsView: View {
                 }
 
                 Section("このアプリについて") {
-                    note("きろくは この iPhone の中だけに ほぞんされます。ログインは いりません。いちを（GPS）は つかいません。")
+                    note("きろくと わんちゃんの しゃしんは この iPhone の中だけに ほぞんされます。ログインは いりません。いち（GPS）は つかいません。")
                     note("このアプリは きろくだけを します。けんこうの はんだんは しません。きになるときは どうぶつ病院に そうだんしてね。")
                     LabeledContent("バージョン", value: version)
                     note("おはぎきなこ工房　フォント：M PLUS Rounded 1c（SIL Open Font License 1.1）")
@@ -77,6 +87,14 @@ struct SettingsView: View {
             .sheet(item: $editingDog) { DogEditView(dog: $0) }
             .sheet(isPresented: $addingDog) { DogEditView(dog: nil) }
         }
+    }
+
+    private func extraBinding(_ kind: EventKind) -> Binding<Bool> {
+        Binding(
+            get: { model.extraButtons.contains(kind) },
+            set: { on in
+                if on { model.extraButtons.insert(kind) } else { model.extraButtons.remove(kind) }
+            })
     }
 
     private func note(_ s: String) -> some View {
@@ -117,6 +135,8 @@ struct DogEditView: View {
     let dog: Dog?
     @State private var name = ""
     @State private var avatar = Avatar.ohagi
+    @State private var photo: Data?
+    @State private var pickedItem: PhotosPickerItem?
     @State private var confirmDelete = false
 
     var body: some View {
@@ -125,7 +145,24 @@ struct DogEditView: View {
                 Section("なまえ") {
                     TextField("れい：おはぎ", text: $name)
                 }
-                Section("え") {
+                Section {
+                    HStack(spacing: 16) {
+                        DogFace(avatar: avatar, photo: photo, size: 72)
+                        VStack(alignment: .leading, spacing: 8) {
+                            PhotosPicker(selection: $pickedItem, matching: .images) {
+                                Label(photo == nil ? "しゃしんを えらぶ" : "しゃしんを かえる", systemImage: "photo")
+                            }
+                            if photo != nil {
+                                Button("しゃしんを やめる", role: .destructive) { photo = nil }
+                            }
+                        }
+                    }
+                } header: {
+                    Text("しゃしん")
+                } footer: {
+                    Text("まんなかを まるく きりとります。しゃしんは この iPhone の中だけに ほぞんされます。")
+                }
+                Section(photo == nil ? "え" : "え（しゃしんが ないときに つかいます）") {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
                         ForEach(Avatar.allCases, id: \.self) { a in
                             Button { avatar = a } label: {
@@ -166,6 +203,17 @@ struct DogEditView: View {
                 if let dog {
                     name = dog.name
                     avatar = dog.avatar
+                    photo = dog.photo
+                }
+            }
+            .onChange(of: pickedItem) { _, item in
+                guard let item else { return }
+                Task {
+                    if let data = try? await item.loadTransferable(type: Data.self),
+                       let square = PhotoTools.squareJPEG(from: data, side: 320) {
+                        photo = square
+                    }
+                    pickedItem = nil
                 }
             }
         }
@@ -177,9 +225,10 @@ struct DogEditView: View {
         if var d = dog {
             d.name = trimmed
             d.avatar = avatar
+            d.photo = photo
             model.updateDog(d)
         } else {
-            model.addDog(name: trimmed, avatar: avatar)
+            model.addDog(name: trimmed, avatar: avatar, photo: photo)
         }
         dismiss()
     }

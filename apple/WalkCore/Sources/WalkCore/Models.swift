@@ -9,8 +9,20 @@ public enum EventKind: String, Codable, CaseIterable, Sendable {
     case walkStart
     case walkEnd
 
-    /// The four big one-tap buttons, in screen order (2x2 on the Watch).
-    public static let buttons: [EventKind] = [.pee, .poop, .water, .food]
+    /// Kinds that can be one-tap buttons, in screen order.
+    public static let buttonKinds: [EventKind] = [.pee, .poop, .water, .food]
+    /// Always shown. おみず and ごはん are optional (turned on in せってい).
+    public static let standardButtons: [EventKind] = [.pee, .poop]
+
+    /// The buttons to show: the standard two plus the optional ones turned on, in screen order.
+    public static func buttons(extra: Set<EventKind>) -> [EventKind] {
+        buttonKinds.filter { standardButtons.contains($0) || extra.contains($0) }
+    }
+
+    /// Lay buttons out in rows of two; an odd last button gets a row of its own (full width).
+    public static func rows(_ buttons: [EventKind]) -> [[EventKind]] {
+        stride(from: 0, to: buttons.count, by: 2).map { Array(buttons[$0 ..< min($0 + 2, buttons.count)]) }
+    }
 
     public var label: String {
         switch self {
@@ -59,12 +71,15 @@ public struct Dog: Codable, Identifiable, Hashable, Sendable {
     public var name: String
     public var avatar: Avatar
     public var order: Int
+    /// The user's own photo of the dog (small square JPEG). When set, it is shown instead of `avatar`.
+    public var photo: Data?
 
-    public init(id: UUID = UUID(), name: String, avatar: Avatar, order: Int) {
+    public init(id: UUID = UUID(), name: String, avatar: Avatar, order: Int, photo: Data? = nil) {
         self.id = id
         self.name = name
         self.avatar = avatar
         self.order = order
+        self.photo = photo
     }
 }
 

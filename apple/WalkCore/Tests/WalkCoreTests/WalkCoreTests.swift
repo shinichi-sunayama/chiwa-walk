@@ -98,6 +98,22 @@ final class WalkLogTests: XCTestCase {
     }
 }
 
+final class ButtonTests: XCTestCase {
+    func testStandardButtonsAndOptionalOnes() {
+        XCTAssertEqual(EventKind.buttons(extra: []), [.pee, .poop])
+        XCTAssertEqual(EventKind.buttons(extra: [.food]), [.pee, .poop, .food])
+        XCTAssertEqual(EventKind.buttons(extra: [.food, .water]), [.pee, .poop, .water, .food])
+        // Walk start/end are never buttons.
+        XCTAssertEqual(EventKind.buttons(extra: [.walkStart]), [.pee, .poop])
+    }
+
+    func testRowsOfTwo() {
+        XCTAssertEqual(EventKind.rows([.pee, .poop]), [[.pee, .poop]])
+        XCTAssertEqual(EventKind.rows([.pee, .poop, .water]), [[.pee, .poop], [.water]])
+        XCTAssertEqual(EventKind.rows([.pee, .poop, .water, .food]), [[.pee, .poop], [.water, .food]])
+    }
+}
+
 final class WatchSyncTests: XCTestCase {
     func testOperationRoundTrip() throws {
         let dog = UUID()
@@ -109,11 +125,17 @@ final class WatchSyncTests: XCTestCase {
     }
 
     func testSnapshotRoundTripAndBadInput() throws {
-        let dogs = [Dog(name: "しらたま", avatar: .shiratama, order: 0)]
-        let snap = WatchSync.Snapshot(dogs: dogs, events: [], madeAt: Date(timeIntervalSince1970: 1_800_000_000))
+        let dogs = [Dog(name: "しらたま", avatar: .shiratama, order: 0, photo: Data([0xFF, 0xD8, 0x01]))]
+        let snap = WatchSync.Snapshot(dogs: dogs, events: [], madeAt: Date(timeIntervalSince1970: 1_800_000_000), buttons: [.pee, .poop, .water])
         let dict = try WatchSync.encode(snap)
         XCTAssertEqual(WatchSync.decode(WatchSync.Snapshot.self, from: dict), snap)
         XCTAssertNil(WatchSync.decode(WatchSync.Snapshot.self, from: ["other": 1]))
+        // A snapshot from the first prototype (no photo, no buttons) still decodes.
+        let old = #"{"version":1,"dogs":[{"id":"6F9619FF-8B86-D011-B42D-00C04FC964FF","name":"きなこ","avatar":"kinako","order":0}],"events":[],"madeAt":1800000000}"#
+        let decoded = WatchSync.decode(WatchSync.Snapshot.self, from: [WatchSync.key: Data(old.utf8)])
+        XCTAssertEqual(decoded?.dogs.first?.name, "きなこ")
+        XCTAssertNil(decoded?.dogs.first?.photo)
+        XCTAssertNil(decoded?.buttons)
         XCTAssertNil(WatchSync.decode(WatchSync.Snapshot.self, from: [WatchSync.key: Data("x".utf8)]))
     }
 

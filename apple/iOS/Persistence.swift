@@ -22,12 +22,13 @@ final class CDDog: NSManagedObject {
     @NSManaged var avatar: String?
     @NSManaged var order: Int64
     @NSManaged var createdAt: Date?
+    @NSManaged var photo: Data?
     @NSManaged var household: CDHousehold?
     @NSManaged var events: NSSet?
 
     var value: Dog? {
         guard let id else { return nil }
-        return Dog(id: id, name: name ?? "", avatar: Avatar(rawValue: avatar ?? "") ?? .paw, order: Int(order))
+        return Dog(id: id, name: name ?? "", avatar: Avatar(rawValue: avatar ?? "") ?? .paw, order: Int(order), photo: photo)
     }
 }
 
@@ -56,6 +57,10 @@ enum OsanpoModel {
             a.defaultValue = defaultValue
             return a
         }
+
+        // The dog's own photo (square JPEG, about 20 KB). Large values go to a file next to the store (and a CKAsset in iCloud).
+        let photoAttribute = attribute("photo", .binaryDataAttributeType)
+        photoAttribute.allowsExternalBinaryDataStorage = true
 
         let household = NSEntityDescription()
         household.name = "Household"
@@ -114,6 +119,7 @@ enum OsanpoModel {
             attribute("avatar", .stringAttributeType),
             attribute("order", .integer64AttributeType, defaultValue: 0),
             attribute("createdAt", .dateAttributeType),
+            photoAttribute,
             dogHousehold,
             dogEvents,
         ]

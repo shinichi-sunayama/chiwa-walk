@@ -42,14 +42,12 @@ struct WatchRecordView: View {
 
     var body: some View {
         let disabled = store.selectedDogIDs.isEmpty
-        Grid(horizontalSpacing: 6, verticalSpacing: 7) {
-            GridRow {
-                button(.pee)
-                button(.poop)
-            }
-            GridRow {
-                button(.water)
-                button(.food)
+        let rows = EventKind.rows(store.buttons)
+        VStack(spacing: 7) {
+            ForEach(rows, id: \.self) { row in
+                HStack(spacing: 6) {
+                    ForEach(row, id: \.self) { kind in button(kind, big: rows.count == 1) }
+                }
             }
         }
         .disabled(disabled)
@@ -67,11 +65,11 @@ struct WatchRecordView: View {
         .onChange(of: store.lastRecord) { _, new in scheduleHide(new) }
     }
 
-    private func button(_ kind: EventKind) -> some View {
+    private func button(_ kind: EventKind, big: Bool) -> some View {
         Button { store.record(kind) } label: {
-            VStack(spacing: 0) {
-                Text(kind.emoji).font(.system(size: 26))
-                Text(kind.label).font(Theme.font(14)).lineLimit(1).minimumScaleFactor(0.7)
+            VStack(spacing: big ? 4 : 0) {
+                KindIcon(kind: kind, size: big ? 40 : 26)
+                Text(kind.label).font(Theme.font(big ? 18 : 14)).lineLimit(1).minimumScaleFactor(0.7)
             }
         }
         .buttonStyle(LipButtonStyle(fill: kind.fill, lip: kind.lip, corner: 16, depth: 4, foreground: kind.ink))
@@ -83,7 +81,7 @@ struct WatchRecordView: View {
             if shown.isEmpty {
                 Image(systemName: "pawprint").foregroundStyle(Theme.red)
             }
-            ForEach(Array(shown)) { dog in DogFace(avatar: dog.avatar, size: 24) }
+            ForEach(Array(shown)) { dog in DogFace(dog: dog, size: 24) }
             if store.selectedDogs.count > 3 {
                 Text("+\(store.selectedDogs.count - 3)").font(Theme.font(11)).padding(.leading, 8)
             }
@@ -108,7 +106,10 @@ struct WatchRecordView: View {
         let kind = made.first?.kind ?? .pee
         return VStack(spacing: 6) {
             Image(systemName: "checkmark.circle.fill").font(.system(size: 34)).foregroundStyle(Theme.green)
-            Text("\(kind.emoji) \(kind.label)").font(Theme.font(17))
+            HStack(spacing: 4) {
+                KindIcon(kind: kind, size: 18)
+                Text(kind.label).font(Theme.font(17))
+            }
             Text(names).font(Theme.font(13)).lineLimit(2).minimumScaleFactor(0.6).multilineTextAlignment(.center)
             Button("とりけす") { store.undoLastRecord() }
                 .font(Theme.font(14))
@@ -143,7 +144,7 @@ struct WatchDogPicker: View {
                 if on { store.selectedDogIDs.remove(dog.id) } else { store.selectedDogIDs.insert(dog.id) }
             } label: {
                 HStack {
-                    DogFace(avatar: dog.avatar, size: 30, selected: on)
+                    DogFace(dog: dog, size: 30, selected: on)
                     Text(dog.name).font(Theme.font(15))
                     Spacer()
                     if on { Image(systemName: "checkmark").foregroundStyle(Theme.orange) }
@@ -165,7 +166,7 @@ struct WatchStatusView: View {
                     ForEach(store.dogs) { dog in
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 6) {
-                                DogFace(avatar: dog.avatar, size: 22)
+                                DogFace(dog: dog, size: 22)
                                 Text(dog.name).font(Theme.font(15)).lineLimit(1)
                                 if let start = WalkLog.walkInProgress(dog: dog.id, in: store.events, now: context.date) {
                                     Text("🐾\(WalkLog.durationText(from: start, to: context.date))")

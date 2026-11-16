@@ -94,7 +94,7 @@ struct EventEditView: View {
                             }
                         } label: {
                             HStack {
-                                DogFace(avatar: dog.avatar, size: 32)
+                                DogFace(dog: dog, size: 32)
                                 Text(dog.name).foregroundStyle(Theme.text)
                                 Spacer()
                                 if dogIDs.contains(dog.id) { Image(systemName: "checkmark").foregroundStyle(Theme.orange) }

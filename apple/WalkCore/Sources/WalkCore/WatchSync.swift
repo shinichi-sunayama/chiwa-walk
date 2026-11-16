@@ -29,12 +29,15 @@ public enum WatchSync {
         /// Recent events plus the latest event of every kind for every dog (so "last poop" works even if old).
         public var events: [WalkEvent]
         public var madeAt: Date
+        /// One-tap buttons chosen in the iPhone's せってい (nil in older snapshots = the standard two).
+        public var buttons: [EventKind]?
 
-        public init(dogs: [Dog], events: [WalkEvent], madeAt: Date) {
+        public init(dogs: [Dog], events: [WalkEvent], madeAt: Date, buttons: [EventKind]? = nil) {
             self.version = WatchSync.version
             self.dogs = dogs
             self.events = events
             self.madeAt = madeAt
+            self.buttons = buttons
         }
     }
 

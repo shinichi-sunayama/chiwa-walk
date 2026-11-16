@@ -17,6 +17,17 @@ final class AppModel: ObservableObject {
             onChange?()
         }
     }
+    /// Optional one-tap buttons turned on in せってい (おみず, ごはん). おしっこ and うんち are always shown.
+    @Published var extraButtons: Set<EventKind> = Set(
+        (UserDefaults.standard.array(forKey: "extraButtons") as? [String] ?? []).compactMap(EventKind.init(rawValue:))
+    ) {
+        didSet {
+            UserDefaults.standard.set(extraButtons.map(\.rawValue), forKey: "extraButtons")
+            onChange?()
+        }
+    }
+    var buttons: [EventKind] { EventKind.buttons(extra: extraButtons) }
+
     /// The last one-tap record, kept for a few seconds so it can be undone.
     @Published var lastRecord: [WalkEvent]?
 
@@ -121,11 +132,12 @@ final class AppModel: ObservableObject {
 
     // MARK: - Dogs
 
-    func addDog(name: String, avatar: Avatar) {
+    func addDog(name: String, avatar: Avatar, photo: Data?) {
         let obj = CDDog(context: context)
         obj.id = UUID()
         obj.name = name
         obj.avatar = avatar.rawValue
+        obj.photo = photo
         obj.order = Int64((dogs.map(\.order).max() ?? -1) + 1)
         obj.createdAt = .now
         obj.household = household()
@@ -137,6 +149,7 @@ final class AppModel: ObservableObject {
         guard let obj = cdDog(dog.id) else { return }
         obj.name = dog.name
         obj.avatar = dog.avatar.rawValue
+        obj.photo = dog.photo
         save()
     }
 

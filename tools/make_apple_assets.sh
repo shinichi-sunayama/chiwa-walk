@@ -23,6 +23,17 @@ catalog() { # $1 = catalog dir, $2 = platform (ios / watchos)
   cat > "$cat/AppIcon.appiconset/Contents.json" <<EOF
 {"images":[{"filename":"icon-1024.png","idiom":"universal","platform":"$platform","size":"1024x1024"}],"info":{"author":"xcode","version":1}}
 EOF
+  # Button illustrations (assets/kinds/pee.png etc., optional: the app shows emoji when missing).
+  for f in assets/kinds/*.png; do
+    [ -f "$f" ] || continue
+    local kname
+    kname=$(basename "$f" .png)
+    mkdir -p "$cat/kind_$kname.imageset"
+    cp "$f" "$cat/kind_$kname.imageset/$kname.png"
+    cat > "$cat/kind_$kname.imageset/Contents.json" <<EOF
+{"images":[{"filename":"$kname.png","idiom":"universal"}],"info":{"author":"xcode","version":1}}
+EOF
+  done
   for f in assets/dogs/*.png; do
     local name
     name=$(basename "$f" .png)

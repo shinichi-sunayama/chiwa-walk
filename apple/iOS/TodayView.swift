@@ -66,7 +66,7 @@ struct TodayView: View {
                             if on { model.selectedDogIDs.remove(dog.id) } else { model.selectedDogIDs.insert(dog.id) }
                         } label: {
                             VStack(spacing: 4) {
-                                DogFace(avatar: dog.avatar, size: 56, selected: on)
+                                DogFace(dog: dog, size: 56, selected: on)
                                 Text(dog.name).font(Theme.font(13)).foregroundStyle(on ? Theme.text : Theme.muted).lineLimit(1)
                             }
                             .frame(width: 70)
@@ -112,16 +112,23 @@ struct TodayView: View {
 
     private var buttons: some View {
         VStack(spacing: 6) {
-            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 14) {
-                ForEach(EventKind.buttons, id: \.self) { kind in
-                    Button { model.record(kind) } label: {
-                        VStack(spacing: 4) {
-                            Text(kind.emoji).font(.system(size: 34))
-                            Text(kind.label).font(Theme.font(20))
+            // Two buttons are extra tall; with おみず / ごはん turned on they share rows of two.
+            let rows = EventKind.rows(model.buttons)
+            let height: CGFloat = rows.count == 1 ? 150 : 104
+            VStack(spacing: 14) {
+                ForEach(rows, id: \.self) { row in
+                    HStack(spacing: 12) {
+                        ForEach(row, id: \.self) { kind in
+                            Button { model.record(kind) } label: {
+                                VStack(spacing: 4) {
+                                    KindIcon(kind: kind, size: rows.count == 1 ? 46 : 34)
+                                    Text(kind.label).font(Theme.font(rows.count == 1 ? 24 : 20))
+                                }
+                            }
+                            .buttonStyle(LipButtonStyle(fill: kind.fill, lip: kind.lip, foreground: kind.ink))
+                            .frame(height: height)
                         }
                     }
-                    .buttonStyle(LipButtonStyle(fill: kind.fill, lip: kind.lip, foreground: kind.ink))
-                    .frame(height: 104)
                 }
             }
             .disabled(model.selectedDogIDs.isEmpty)
@@ -139,7 +146,7 @@ struct TodayView: View {
             VStack(spacing: 10) {
                 ForEach(model.dogs) { dog in
                     HStack(spacing: 12) {
-                        DogFace(avatar: dog.avatar, size: 44)
+                        DogFace(dog: dog, size: 44)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(dog.name).font(Theme.font(16)).foregroundStyle(Theme.text)
                             factLine(.poop, dog: dog, now: context.date)
@@ -223,7 +230,7 @@ struct EventRow: View {
                 .font(Theme.font(15)).monospacedDigit().foregroundStyle(Theme.text)
                 .frame(minWidth: 52, alignment: .leading)
             if let dog = model.dog(event.dogID) {
-                DogFace(avatar: dog.avatar, size: 26)
+                DogFace(dog: dog, size: 26)
                 Text(dog.name).font(Theme.font(14)).foregroundStyle(Theme.text).lineLimit(1)
             }
             Text("\(event.kind.emoji) \(event.kind.label)").font(Theme.font(14)).foregroundStyle(Theme.text)
