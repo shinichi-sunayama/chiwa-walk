@@ -7,21 +7,39 @@ Mac がなくても、GitHub のクラウドの Mac で組み立て・署名し�
 | 段階 | 内容 | だれが | 状態 |
 |---|---|---|---|
 | 1 | Swift のアプリを書く（`apple/`） | Claude | 試作1 |
-| 2 | バンドル ID を 2 つ登録し、App Store Connect にアプリを作る | ユーザー | |
+| 2 | 共有フォルダ（App Group）と iCloud の入れ物を作り、バンドル ID を 3 つ登録し、App Store Connect にアプリを作る | ユーザー | |
 | 3 | このリポジトリの GitHub の Secrets に鍵を 4 つ入れる | ユーザー | |
 | 4 | クラウドで組み立て・署名して App Store Connect に上げる | Claude | |
 | 5 | TestFlight で iPhone と Watch に入れ、散歩で試す | ユーザー | |
 
-iCloud（自分の iCloud での同期・家族共有）は試作2から。そのときに iCloud の設定の手順を足します（今は不要）。
+iCloud（自分の iCloud での同期・家族共有）の中身は試作2からですが、Apple のサイトでの設定は**今いっしょに**済ませます（あとでもう一度行かなくてよいように）。
 
 ## 2. バンドル ID を登録して、アプリを作る（ユーザー）
 
-### 2-1. バンドル ID（アプリの名札）を 2 つ登録
-1. https://developer.apple.com/account/resources/identifiers/list を開く
-2. 「＋」→「App IDs」→「Continue」→「App」→「Continue」
-3. 説明（Description）`Osanpo`、Bundle ID は「Explicit」で **`com.ohagikinakokobo.osanpo`** →「Continue」→「Register」
-4. もう一度 2. から。説明 `Osanpo Watch`、Bundle ID **`com.ohagikinakokobo.osanpo.watchkitapp`**
-   - 機能（Capabilities）のチェックは、今はどちらも何も付けなくてよい（iCloud は試作2で付けます）
+### 2-0. 先に「入れ物」を2つ作る
+Apple Developer のサイト：https://developer.apple.com/account/resources/identifiers/list
+
+1. **App Group（iPhone・Watch・文字盤が同じデータを読むための共有フォルダ）**
+   - 右上のプルダウン（「App IDs」と書いてあるところ）で **「App Groups」** を選ぶ →「＋」
+   - 説明（Description）`Osanpo Group`、Identifier **`group.com.ohagikinakokobo.osanpo`** →「Continue」→「Register」
+2. **iCloud Container（自分の iCloud に記録を置く場所。試作2で使う）**
+   - プルダウンで **「iCloud Containers」** を選ぶ →「＋」
+   - 説明 `Osanpo iCloud`、Identifier **`iCloud.com.ohagikinakokobo.osanpo`** →「Continue」→「Register」
+
+### 2-1. バンドル ID（アプリの名札）を 3 つ登録
+プルダウンを **「App IDs」** に戻して、次の3つを登録します。どれも「＋」→「App IDs」→「Continue」→「App」→「Continue」→ 説明と Bundle ID（「Explicit」）を入れ、下の「Capabilities」で印をつけて →「Continue」→「Register」。
+
+| 説明 | Bundle ID | Capabilities で印をつけるもの |
+|---|---|---|
+| `Osanpo` | **`com.ohagikinakokobo.osanpo`** | **App Groups**・**iCloud**（「CloudKit」を含むほう） |
+| `Osanpo Watch` | **`com.ohagikinakokobo.osanpo.watchkitapp`** | **App Groups** |
+| `Osanpo Complication` | **`com.ohagikinakokobo.osanpo.watchkitapp.complication`** | **App Groups** |
+
+印をつけたあと、どの App Group・iCloud Container を使うかを結びつけます。
+1. 一覧で登録した App ID をクリック → 「App Groups」の右の **「Configure」**（または「Edit」）→ `group.com.ohagikinakokobo.osanpo` に印 →「Continue」→「Save」
+2. `Osanpo`（iPhone）だけは、「iCloud」の右の **「Configure」** → `iCloud.com.ohagikinakokobo.osanpo` に印 →「Continue」→「Save」
+3. 「設定を変えると、いまのプロビジョニングプロファイルが無効になります」と出たら「Confirm」でよい（クラウドの組み立てが作り直します）
+   - 3つ目（Complication）は、Watch の文字盤に「うんち ○時間前」を出す部品です
 
 ### 2-2. App Store Connect にアプリを作る
 1. https://appstoreconnect.apple.com/ →「アプリ」→ 左上の「＋」→「新規 App」
@@ -71,3 +89,4 @@ gh workflow run apple.yml -R shinichi-sunayama/chiwa-walk -f upload=true
 - iPhone を家に置いて散歩し、Watch だけで記録 → 帰ってから iPhone に届いているか
 - Watch の2ページ目（下にスクロール）の「うんち ○時間前」
 - iPhone の「きろく」で時刻の直し・消し・あとから追加、「せってい」の一覧を送る
+- Watch の文字盤の編集（文字盤を長押し →「編集」→ コンプリケーション）で「おさんぽ帳」を選ぶ → 「💩 3時間」などが出るか、時間とともに進むか
