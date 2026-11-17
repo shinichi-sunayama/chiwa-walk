@@ -180,3 +180,34 @@ final class ExportTests: XCTestCase {
         XCTAssertEqual(text, "2026/11/16（月）\nおはぎ　おしっこ 2回（7:50, 12:50）・うんち 1回（7:51）\nきなこ　おしっこ 1回（7:50）\n")
     }
 }
+
+final class ComplicationTests: XCTestCase {
+    let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+    func testLinesForSelectedDogsInOrder() {
+        let a = Dog(name: "おはぎ", avatar: .ohagi, order: 1)
+        let b = Dog(name: "きなこ", avatar: .kinako, order: 0)
+        let c = Dog(name: "しらたま", avatar: .shiratama, order: 2)
+        let events = [
+            WalkEvent(dogID: a.id, kind: .poop, date: now.addingTimeInterval(-3 * 3600)),
+            WalkEvent(dogID: a.id, kind: .pee, date: now.addingTimeInterval(-600)),
+            WalkEvent(dogID: b.id, kind: .poop, date: now.addingTimeInterval(-3600)),
+            WalkEvent(dogID: c.id, kind: .poop, date: now.addingTimeInterval(-60)),
+        ]
+        let data = ComplicationData.make(dogs: [a, b, c], selected: [a.id, b.id], events: events, now: now)
+        XCTAssertEqual(data.lines.map(\.dogName), ["きなこ", "おはぎ"])
+        XCTAssertEqual(data.lines[1].lastPoop, now.addingTimeInterval(-3 * 3600))
+        XCTAssertEqual(data.lines[1].lastPee, now.addingTimeInterval(-600))
+        XCTAssertNil(data.lines[0].lastPee)
+        XCTAssertEqual(data.latestPoop, now.addingTimeInterval(-3600))
+        XCTAssertEqual(ComplicationData.decode(data.encoded()), data)
+    }
+
+    func testNoSelectionMeansAllDogsAndAtMostThree() {
+        let dogs = (0..<5).map { Dog(name: "犬\($0)", avatar: .paw, order: $0) }
+        let data = ComplicationData.make(dogs: dogs, selected: [], events: [], now: now)
+        XCTAssertEqual(data.lines.map(\.dogName), ["犬0", "犬1", "犬2"])
+        XCTAssertNil(data.latestPoop)
+        XCTAssertNil(ComplicationData.decode(Data("bad".utf8)))
+    }
+}

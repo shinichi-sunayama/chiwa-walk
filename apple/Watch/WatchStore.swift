@@ -1,6 +1,7 @@
 import Foundation
 import WalkCore
 import WatchConnectivity
+import WidgetKit
 
 /// The Watch's state. Records are saved on the Watch first (a JSON file), then queued to the iPhone with
 /// transferUserInfo, which is delivered even if the iPhone is at home and the walk is long (spec 6).
@@ -12,7 +13,10 @@ final class WatchStore: NSObject, ObservableObject {
     /// Buttons chosen on the iPhone (おしっこ・うんち, plus おみず・ごはん if turned on).
     @Published private(set) var buttons: [EventKind] = EventKind.standardButtons
     @Published var selectedDogIDs: Set<UUID> = [] {
-        didSet { UserDefaults.standard.set(selectedDogIDs.map(\.uuidString), forKey: "selectedDogs") }
+        didSet {
+            UserDefaults.standard.set(selectedDogIDs.map(\.uuidString), forKey: "selectedDogs")
+            updateComplication()
+        }
     }
     /// The last tap, shown with an undo button for a few seconds.
     @Published var lastRecord: [WalkEvent]?
@@ -97,6 +101,17 @@ final class WatchStore: NSObject, ObservableObject {
             selectedDogIDs = selectedDogIDs.intersection(valid).union(newDogs)
         }
         UserDefaults.standard.set(valid.map(\.uuidString), forKey: "knownDogs")
+        updateComplication()
+    }
+
+    /// Hand the Watch face what it shows (App Group), and refresh it only when something changed.
+    private func updateComplication() {
+        guard let shared = UserDefaults(suiteName: ComplicationData.appGroup) else { return }
+        let data = ComplicationData.make(dogs: dogs, selected: selectedDogIDs, events: events, now: .now)
+        let old = ComplicationData.decode(shared.data(forKey: ComplicationData.defaultsKey))
+        guard old?.lines != data.lines, let encoded = data.encoded() else { return }
+        shared.set(encoded, forKey: ComplicationData.defaultsKey)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func apply(snapshot: WatchSync.Snapshot, author: String?) {
