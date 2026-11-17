@@ -39,3 +39,10 @@
 - Gemini で描いた「赤いリードでおさんぽ中のおはぎ＋芝生の上の手帳＋足あと」（2000×2000）を採用。`docs/art/icon/app_icon_gemini.jpg`。小さく表示しても、Watch の丸い切り抜きでも犬の顔が残ることを確認。
 - 1枚目が荒かった原因は見本の絵が 118×180 と小さかったこと。見本を 1024px の `reference_ohagi.png` に替え、線・手帳・足あと・ふちの指定を足して描き直した。
 - **ボタンの絵（2026-11-17）**：おしっこ（しずく3つ、Gemini の SVG）とうんち（ソフトクリーム型・顔なし、Gemini）を採用。表現は絵文字と同じ程度の記号で、リアルさ・顔・食べ物に見える演出はなく問題なしと判断。ボタンの色と同じ黄色のしずくが見えなくなるため、絵は**白い丸の上に**のせる。SVG はベクターのままアセットに入れる。おみず（犬用の水入れ）・ごはん（ドッグフードのお皿）も同日に採用し、4つとも工房の絵になった（絵文字は絵がないときの予備）。
+
+## 2026-11-17 登録待ちの間に進めたこと（ユーザー了承）
+
+- **犬5匹の絵をくっきりした版に**：chiwa-photo の 3D モデル描き出し（約340px）から、丸いアイコン用に顔のまわりを切り出した 320px に差し替え（`tools/make_dog_faces.py`）。以前の 118×180 は iPhone でぼやけていた。
+- **Watch の文字盤（コンプリケーション）**：WidgetKit の拡張を追加。丸・角・1行・長方形に対応。長方形は「いっしょの犬」最大3匹の「💩○時間 💦○分」、丸・角・1行はいちばん新しいうんちからの時間。Watch アプリが App Group（`group.com.ohagikinakokobo.osanpo`）に「最後の時刻」を書き、文字盤は10分ごとの表示を4時間分作って自分で進める。計算は WalkCore の `ComplicationData`（テストあり、計17件）。
+- **App Group と iCloud の入れ物を今の登録で一緒に作ってもらう**：文字盤のために3つ目のバンドル ID（`…watchkitapp.complication`）と App Group が必要になったので、試作2で使う iCloud Container（`iCloud.com.ohagikinakokobo.osanpo`）も同じ手順に入れた（`docs/ios-testflight.md` の 2-0・2-1）。
+- **プライバシーポリシーとサポートのページ**を `site/` に作り、GitHub Pages で公開：https://shinichi-sunayama.github.io/chiwa-walk/privacy.html ・ https://shinichi-sunayama.github.io/chiwa-walk/support.html 。連絡先は pickle-score と同じ工房のメール。iCloud・家族共有・応援の購入（1.0 で入る予定のもの）も書いてある。
