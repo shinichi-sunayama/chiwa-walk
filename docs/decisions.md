@@ -44,5 +44,6 @@
 
 - **犬5匹の絵をくっきりした版に**：chiwa-photo の 3D モデル描き出し（約340px）から、丸いアイコン用に顔のまわりを切り出した 320px に差し替え（`tools/make_dog_faces.py`）。以前の 118×180 は iPhone でぼやけていた。
 - **Watch の文字盤（コンプリケーション）**：WidgetKit の拡張を追加。丸・角・1行・長方形に対応。長方形は「いっしょの犬」最大3匹の「💩○時間 💦○分」、丸・角・1行はいちばん新しいうんちからの時間。Watch アプリが App Group（`group.com.ohagikinakokobo.osanpo`）に「最後の時刻」を書き、文字盤は10分ごとの表示を4時間分作って自分で進める。計算は WalkCore の `ComplicationData`（テストあり、計17件）。
-- **App Group と iCloud の入れ物を今の登録で一緒に作ってもらう**：文字盤のために3つ目のバンドル ID（`…watchkitapp.complication`）と App Group が必要になったので、試作2で使う iCloud Container（`iCloud.com.ohagikinakokobo.osanpo`）も同じ手順に入れた（`docs/ios-testflight.md` の 2-0・2-1）。
+- **App Group と iCloud の入れ物を今の登録で一緒に作ってもらう**：文字盤のために3つ目のバンドル ID（`…watchkitapp.widget`）と App Group が必要になったので、試作2で使う iCloud Container（`iCloud.com.ohagikinakokobo.osanpo`）も同じ手順に入れた（`docs/ios-testflight.md` の 2-0・2-1）。
 - **プライバシーポリシーとサポートのページ**を `site/` に作り、GitHub Pages で公開：https://shinichi-sunayama.github.io/chiwa-walk/privacy.html ・ https://shinichi-sunayama.github.io/chiwa-walk/support.html 。連絡先は pickle-score と同じ工房のメール。iCloud・家族共有・応援の購入（1.0 で入る予定のもの）も書いてある。
+- **文字盤のバンドル ID を `com.ohagikinakokobo.osanpo.watchkitapp.widget` に変更**（2026-11-17）：`…watchkitapp.complication` は Apple Developer で「使用できない（not available）」と出て登録できなかった（一覧にも存在しない）。

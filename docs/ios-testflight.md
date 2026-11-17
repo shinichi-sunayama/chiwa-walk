@@ -33,7 +33,7 @@ Apple Developer のサイト：https://developer.apple.com/account/resources/ide
 |---|---|---|
 | `Osanpo` | **`com.ohagikinakokobo.osanpo`** | **App Groups**・**iCloud**（「CloudKit」を含むほう） |
 | `Osanpo Watch` | **`com.ohagikinakokobo.osanpo.watchkitapp`** | **App Groups** |
-| `Osanpo Complication` | **`com.ohagikinakokobo.osanpo.watchkitapp.complication`** | **App Groups** |
+| `Osanpo Complication` | **`com.ohagikinakokobo.osanpo.watchkitapp.widget`** | **App Groups** |
 
 印をつけたあと、どの App Group・iCloud Container を使うかを結びつけます。
 1. 一覧で登録した App ID をクリック → 「App Groups」の右の **「Configure」**（または「Edit」）→ `group.com.ohagikinakokobo.osanpo` に印 →「Continue」→「Save」

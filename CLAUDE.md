@@ -17,7 +17,7 @@
 - `apple/Watch/` … Watch。`WatchStore.swift`（Watch に先に保存 → transferUserInfo で iPhone へ。iPhone からは applicationContext で犬と最近の記録）、`WatchViews.swift`。
 - `apple/Shared/` … 色・フォント・振動・犬の顔（写真対応）・ボタンの絵（KindIcon、白い丸の上）・プライバシー申告。
 - `apple/Complication/` … Watch の文字盤（WidgetKit 拡張）。Watch アプリが App Group `group.com.ohagikinakokobo.osanpo` に書いた `ComplicationData` を読むだけ。
-- `apple/project.yml` … XcodeGen（Xcode プロジェクトは生成物、git に入れない）。バンドル ID `com.ohagikinakokobo.osanpo`／`.watchkitapp`／`.watchkitapp.complication`。iCloud Container は `iCloud.com.ohagikinakokobo.osanpo`（試作2で使う）。
+- `apple/project.yml` … XcodeGen（Xcode プロジェクトは生成物、git に入れない）。バンドル ID `com.ohagikinakokobo.osanpo`／`.watchkitapp`／`.watchkitapp.widget`。iCloud Container は `iCloud.com.ohagikinakokobo.osanpo`（試作2で使う）。
 - `site/` … プライバシーポリシー・サポート（GitHub Pages、ci.yml が公開）。https://shinichi-sunayama.github.io/chiwa-walk/
 - `assets/dogs/` … 犬5匹の顔（chiwa-photo の描き出しから `tools/make_dog_faces.py`。条件は `docs/asset-licenses.md`）。`assets/kinds/` … ボタンの絵（Gemini。白背景は `tools/prepare_kind_art.py` で抜く。SVG はそのまま）。`assets/fonts/` … M PLUS Rounded 1c Bold（全文字。犬の名前に何でも使えるように減らしていない）。
 - `tools/make_apple_assets.sh` … アイコンと犬の絵からアセットを作る（macOS）。アイコンは `docs/art/icon/app_icon_gemini.(png|jpg)`、なければ仮の `app_icon_placeholder.png`（`tools/make_placeholder_icon.py`）。
