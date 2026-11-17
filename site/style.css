@@ -1,0 +1,9 @@
+:root { --bg: #fbf3e4; --card: #fffdf8; --text: #4a3426; --muted: #8a7562; --orange: #f39a4c; --lip: #e6d8bf; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.75 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif; }
+main { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 1.5rem; color: var(--orange); margin: 0 0 4px; }
+h2 { font-size: 1.1rem; margin: 24px 0 6px; }
+h3 { font-size: 1rem; margin: 16px 0 2px; }
+section { background: var(--card); border-radius: 18px; padding: 4px 18px 14px; margin: 16px 0; box-shadow: 0 4px 0 var(--lip); }
+.muted { color: var(--muted); font-size: 0.9rem; }
+a { color: #c8702a; }
