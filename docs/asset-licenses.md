@@ -11,3 +11,6 @@
 | ボタンの絵：うんち（ソフトクリーム型、顔なし） | `assets/kinds/poop.png` | Google Gemini で生成（2000px の JPEG）→ `tools/prepare_kind_art.py` で白を抜いて 512px PNG | おはぎきなこ工房（Gemini で生成） | 同上 | 不要 | 2026-11-17 |
 | ボタンの絵：おみず（犬用の水入れ） | `assets/kinds/water.png` | Google Gemini で生成（2000px の JPEG）→ `tools/prepare_kind_art.py` で白を抜いて 512px PNG | おはぎきなこ工房（Gemini で生成） | Google の生成 AI の利用規約に従う（App Store に出す前に最新の規約を確認） | 不要 | 2026-11-17 |
 | ボタンの絵：ごはん（ドッグフードのお皿、骨のマーク） | `assets/kinds/food.png` | 同上 | おはぎきなこ工房（Gemini で生成） | 同上 | 不要 | 2026-11-17 |
+
+## ボタンの絵（おはぎの場面、2026-11-17〜）
+- `assets/kinds/poop.png`：Gemini で工房が作成（元画像 `docs/art/buttons/poop_gemini.jpg`、見本は工房のおはぎ）。`tools/prepare_kind_art.py` で白背景を抜いて 512px。工房の素材として公開・アプリ内利用可。
