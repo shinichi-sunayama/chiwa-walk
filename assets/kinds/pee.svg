@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  
+  <!-- 大きなしずく（左） -->
+  <path d="M 75 45 C 75 45, 45 90, 45 115 A 30 30 0 1 0 105 115 C 105 90, 75 45, 75 45 Z" fill="#FFE047" stroke="#4A321F" stroke-width="6" stroke-linejoin="round" />
+  <ellipse cx="64" cy="108" rx="5" ry="9" transform="rotate(-15 64 108)" fill="#FFF5B8" />
+
+  <!-- 中くらいのしずく（右上） -->
+  <path d="M 135 55 C 135 55, 113 88, 113 105 A 22 22 0 1 0 157 105 C 157 88, 135 55, 135 55 Z" fill="#FFE047" stroke="#4A321F" stroke-width="5.5" stroke-linejoin="round" />
+  <ellipse cx="127" cy="100" rx="3.5" ry="6.5" transform="rotate(-15 127 100)" fill="#FFF5B8" />
+
+  <!-- 小さなしずく（右下） -->
+  <path d="M 122 132 C 122 132, 108 153, 108 164 A 14 14 0 1 0 136 164 C 136 153, 122 132, 122 132 Z" fill="#FFE047" stroke="#4A321F" stroke-width="5" stroke-linejoin="round" />
+</svg>

@@ -23,15 +23,19 @@ catalog() { # $1 = catalog dir, $2 = platform (ios / watchos)
   cat > "$cat/AppIcon.appiconset/Contents.json" <<EOF
 {"images":[{"filename":"icon-1024.png","idiom":"universal","platform":"$platform","size":"1024x1024"}],"info":{"author":"xcode","version":1}}
 EOF
-  # Button illustrations (assets/kinds/pee.png etc., optional: the app shows emoji when missing).
-  for f in assets/kinds/*.png; do
+  # Button illustrations (assets/kinds/pee.png or pee.svg etc., optional: the app shows emoji when missing).
+  # SVG is kept as a vector (sharp at any size).
+  for f in assets/kinds/*.png assets/kinds/*.svg; do
     [ -f "$f" ] || continue
-    local kname
-    kname=$(basename "$f" .png)
+    local file kname props
+    file=$(basename "$f")
+    kname=${file%.*}
+    props=""
+    case "$file" in *.svg) props=',"properties":{"preserves-vector-representation":true}' ;; esac
     mkdir -p "$cat/kind_$kname.imageset"
-    cp "$f" "$cat/kind_$kname.imageset/$kname.png"
+    cp "$f" "$cat/kind_$kname.imageset/$file"
     cat > "$cat/kind_$kname.imageset/Contents.json" <<EOF
-{"images":[{"filename":"$kname.png","idiom":"universal"}],"info":{"author":"xcode","version":1}}
+{"images":[{"filename":"$file","idiom":"universal"}],"info":{"author":"xcode","version":1}$props}
 EOF
   done
   for f in assets/dogs/*.png; do

@@ -87,15 +87,18 @@ extension Color {
     }
 }
 
-/// The picture on a record button: the workshop's illustration (assets/kinds/<kind>.png, drawn with Gemini)
-/// when it exists, otherwise the emoji.
+/// The picture on a record button: the workshop's illustration (assets/kinds/<kind>.png or .svg, drawn with Gemini)
+/// on a white circle (so a yellow drop stays visible on the yellow button), otherwise the emoji.
 struct KindIcon: View {
     var kind: EventKind
     var size: CGFloat
 
     var body: some View {
         if let image = UIImage(named: "kind_\(kind.rawValue)") {
-            Image(uiImage: image).resizable().scaledToFit().frame(width: size * 1.25, height: size * 1.25)
+            Image(uiImage: image).resizable().scaledToFit()
+                .frame(width: size * 1.05, height: size * 1.05)
+                .frame(width: size * 1.5, height: size * 1.5)
+                .background(Circle().fill(.white))
         } else {
             Text(kind.emoji).font(.system(size: size))
         }
