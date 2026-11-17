@@ -20,14 +20,14 @@ iCloud（自分の iCloud での同期・家族共有）の中身は試作2か�
 Apple Developer のサイト：https://developer.apple.com/account/resources/identifiers/list
 
 1. **App Group（iPhone・Watch・文字盤が同じデータを読むための共有フォルダ）**
-   - 右上のプルダウン（「App IDs」と書いてあるところ）で **「App Groups」** を選ぶ →「＋」
+   - 一覧の「Identifiers」の横の「＋」→「Register a new identifier」の画面で **「App Groups」** に印 →「Continue」
    - 説明（Description）`Osanpo Group`、Identifier **`group.com.ohagikinakokobo.osanpo`** →「Continue」→「Register」
 2. **iCloud Container（自分の iCloud に記録を置く場所。試作2で使う）**
-   - プルダウンで **「iCloud Containers」** を選ぶ →「＋」
+   - 「‹ All Identifiers」で一覧に戻り「＋」→ **「iCloud Containers」** に印 →「Continue」
    - 説明 `Osanpo iCloud`、Identifier **`iCloud.com.ohagikinakokobo.osanpo`** →「Continue」→「Register」
 
 ### 2-1. バンドル ID（アプリの名札）を 3 つ登録
-プルダウンを **「App IDs」** に戻して、次の3つを登録します。どれも「＋」→「App IDs」→「Continue」→「App」→「Continue」→ 説明と Bundle ID（「Explicit」）を入れ、下の「Capabilities」で印をつけて →「Continue」→「Register」。
+次の3つを登録します。どれも一覧の「＋」→ **「App IDs」** に印 →「Continue」→「App」→「Continue」→ 説明と Bundle ID（「Explicit」）を入れ、下の「Capabilities」で印をつけて →「Continue」→「Register」。
 
 | 説明 | Bundle ID | Capabilities で印をつけるもの |
 |---|---|---|
