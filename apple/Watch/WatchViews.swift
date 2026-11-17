@@ -14,6 +14,7 @@ struct OsanpoWatchApp: App {
 
 struct WatchRootView: View {
     @EnvironmentObject var store: WatchStore
+    @State private var page = UserDefaults.standard.integer(forKey: "shotPage") // screenshots only
 
     var body: some View {
         NavigationStack {
@@ -25,9 +26,9 @@ struct WatchRootView: View {
                 }
                 .padding(.horizontal, 6)
             } else {
-                TabView {
-                    WatchRecordView()
-                    WatchStatusView()
+                TabView(selection: $page) {
+                    WatchRecordView().tag(0)
+                    WatchStatusView().tag(1)
                 }
                 .tabViewStyle(.verticalPage)
             }

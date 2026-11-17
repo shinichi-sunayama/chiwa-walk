@@ -248,3 +248,14 @@ final class DogSelectionTests: XCTestCase {
         XCTAssertEqual(DogSelection.label([], dogs: dogs), "")
     }
 }
+
+final class DemoDataTests: XCTestCase {
+    func testDemoIsInThePastAndForKnownDogs() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let events = DemoData.events(now: now)
+        let ids = Set(DemoData.dogs.map(\.id))
+        XCTAssertFalse(events.isEmpty)
+        XCTAssertTrue(events.allSatisfy { $0.date < now && ids.contains($0.dogID) })
+        XCTAssertNil(WalkLog.walkInProgress(dog: DemoData.ohagiID, in: events, now: now))
+    }
+}

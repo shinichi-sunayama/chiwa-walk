@@ -36,6 +36,14 @@ final class WatchStore: NSObject, ObservableObject {
 
     override init() {
         super.init()
+        // App Store screenshots (simulator): sample dogs and records, no file, no iPhone link.
+        if UserDefaults.standard.bool(forKey: "shotDemo") {
+            let now = Date()
+            saved.snapshot = WatchSync.Snapshot(dogs: DemoData.dogs, events: DemoData.events(now: now), madeAt: now)
+            selectedDogIDs = [DemoData.ohagiID]
+            rebuild()
+            return
+        }
         load()
         if let ids = UserDefaults.standard.array(forKey: "selectedDogs") as? [String] {
             selectedDogIDs = Set(ids.compactMap(UUID.init(uuidString:)))
