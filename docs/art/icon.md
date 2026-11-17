@@ -2,10 +2,10 @@
 
 ## 手順
 1. Gemini（画像を作れるモデル）を開き、見本の絵を添付してから、下の「おねがいの文」を貼る。
-   - 見本の絵：**`docs/art/icon/reference_ohagi.png`**（おはぎ、1024×1024 のきれいな版）
+   - 見本の絵：**`C:\Users\sunay\Claude\chiwa-walk\docs\art\icon\reference_ohagi.png`**（おはぎ、1024×1024 のきれいな版）
      - 以前案内した `assets/dogs/ohagi.png` は 118×180 と小さく、線がガタガタなので、Gemini がその荒さまでまねてしまう（2026-11-17 の1枚目が荒かった原因）
 2. 描けたら、**画面のスクリーンショットではなく、Gemini のダウンロードボタンで元の画像を保存**する（スクリーンショットだと小さく、ぼやける）
-3. 何枚か作ってもらい、気に入った1枚を **`docs/art/icon/app_icon_gemini.png`**（jpg でも可）という名前で保存する。
+3. 何枚か作ってもらい、気に入った1枚を **`C:\Users\sunay\Claude\chiwa-walk\docs\art\icon\app_icon_gemini.png`**（jpg でも可）という名前で保存する。
    - 正方形でなくても大丈夫（Claude が真ん中を正方形に切り取ります）。1024×1024 以上が理想。
 4. Claude に「アイコンを差し替えて」と頼む。次の組み立てから自動でその絵が使われる（仮のアイコンより優先）。
 5. 使った絵のことを `docs/asset-licenses.md` に書く（Claude が書きます）。
