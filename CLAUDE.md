@@ -21,6 +21,7 @@
 - `site/` … プライバシーポリシー・サポート（GitHub Pages、ci.yml が公開）。https://shinichi-sunayama.github.io/chiwa-walk/
 - `assets/dogs/` … 犬5匹の顔（chiwa-photo の描き出しから `tools/make_dog_faces.py`。条件は `docs/asset-licenses.md`）。`assets/kinds/` … ボタンの絵（Gemini。白背景は `tools/prepare_kind_art.py` で抜く。SVG はそのまま）。`assets/fonts/` … M PLUS Rounded 1c Bold（全文字。犬の名前に何でも使えるように減らしていない）。
 - `tools/make_apple_assets.sh` … アイコンと犬の絵からアセットを作る（macOS）。アイコンは `docs/art/icon/app_icon_gemini.(png|jpg)`、なければ仮の `app_icon_placeholder.png`（`tools/make_placeholder_icon.py`）。
+- `docs/store/appstore-submit.md` … 審査に出す手順と入力内容。スクリーンショットは `gh workflow run screenshots.yml`（見本データ `-shotDemo`）→ `docs/store/screenshots/`。
 - `.github/workflows/apple.yml` … クラウドの Mac で組み立て。`gh workflow run apple.yml -f upload=true` で署名して TestFlight へ。手順は `docs/ios-testflight.md`。
 
 ## 守ること
