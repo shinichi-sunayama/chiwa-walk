@@ -13,4 +13,4 @@
 | ボタンの絵：ごはん（ドッグフードのお皿、骨のマーク） | `assets/kinds/food.png` | 同上 | おはぎきなこ工房（Gemini で生成） | 同上 | 不要 | 2026-11-17 |
 
 ## ボタンの絵（おはぎの場面、2026-11-17〜）
-- `assets/kinds/poop.png`：Gemini で工房が作成（元画像 `docs/art/buttons/poop_gemini.jpg`、見本は工房のおはぎ）。`tools/prepare_kind_art.py` で白背景を抜いて 512px。工房の素材として公開・アプリ内利用可。
+- `assets/kinds/{pee,poop,water,food}.png`：Gemini で工房が作成（元画像 `docs/art/buttons/<種類>_gemini.jpg`、見本は工房のおはぎ）。`tools/prepare_kind_art.py` で白背景を抜いて 512px。工房の素材として公開・アプリ内利用可。

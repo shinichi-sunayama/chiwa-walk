@@ -96,7 +96,7 @@ struct KindIcon: View {
     var body: some View {
         if let image = UIImage(named: "kind_\(kind.rawValue)") {
             Image(uiImage: image).resizable().scaledToFit()
-                .frame(width: size * 1.05, height: size * 1.05)
+                .frame(width: size * 1.2, height: size * 1.2) // the scene art has empty corners, so it can be a bit bigger than the inscribed square
                 .frame(width: size * 1.5, height: size * 1.5)
                 .background(Circle().fill(.white))
         } else {
