@@ -6,10 +6,10 @@ Mac がなくても、GitHub のクラウドの Mac で組み立て・署名し�
 ## 段階
 | 段階 | 内容 | だれが | 状態 |
 |---|---|---|---|
-| 1 | Swift のアプリを書く（`apple/`） | Claude | 試作1 |
-| 2 | 共有フォルダ（App Group）と iCloud の入れ物を作り、バンドル ID を 3 つ登録し、App Store Connect にアプリを作る | ユーザー | |
-| 3 | このリポジトリの GitHub の Secrets に鍵を 4 つ入れる | ユーザー | |
-| 4 | クラウドで組み立て・署名して App Store Connect に上げる | Claude | |
+| 1 | Swift のアプリを書く（`apple/`） | Claude | 試作1（写真・ボタンの絵・文字盤つき） |
+| 2 | 共有フォルダ（App Group）と iCloud の入れ物を作り、バンドル ID を 3 つ登録し、App Store Connect にアプリを作る | ユーザー | 済（2026-11-17。文字盤の ID は `.widget`） |
+| 3 | このリポジトリの GitHub の Secrets に鍵を 4 つ入れる | ユーザー | 済（2026-11-17） |
+| 4 | クラウドで組み立て・署名して App Store Connect に上げる | Claude | 済（2026-11-17、1.0.0 ビルド 10、run 44036587029） |
 | 5 | TestFlight で iPhone と Watch に入れ、散歩で試す | ユーザー | |
 
 iCloud（自分の iCloud での同期・家族共有）の中身は試作2からですが、Apple のサイトでの設定は**今いっしょに**済ませます（あとでもう一度行かなくてよいように）。

@@ -47,3 +47,4 @@
 - **App Group と iCloud の入れ物を今の登録で一緒に作ってもらう**：文字盤のために3つ目のバンドル ID（`…watchkitapp.widget`）と App Group が必要になったので、試作2で使う iCloud Container（`iCloud.com.ohagikinakokobo.osanpo`）も同じ手順に入れた（`docs/ios-testflight.md` の 2-0・2-1）。
 - **プライバシーポリシーとサポートのページ**を `site/` に作り、GitHub Pages で公開：https://shinichi-sunayama.github.io/chiwa-walk/privacy.html ・ https://shinichi-sunayama.github.io/chiwa-walk/support.html 。連絡先は pickle-score と同じ工房のメール。iCloud・家族共有・応援の購入（1.0 で入る予定のもの）も書いてある。
 - **文字盤のバンドル ID を `com.ohagikinakokobo.osanpo.watchkitapp.widget` に変更**（2026-11-17）：`…watchkitapp.complication` は Apple Developer で「使用できない（not available）」と出て登録できなかった（一覧にも存在しない）。
+- **初めての TestFlight**（2026-11-17）：ユーザーが App Group・iCloud Container・バンドル ID 3つ・App Store Connect のアプリ・Secrets 4つを登録。クラウドで署名して **1.0.0（ビルド 10）** を App Store Connect に上げた（run 44036587029、Upload succeeded）。ビルド番号は Actions の実行番号。
