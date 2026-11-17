@@ -36,7 +36,7 @@
 ```
 「場面」の4つ：
 1. おしっこ：小さな黄色い電柱（または小さな木）のにおいを、くんくん嗅いでいる横顔。電柱の根元に小さな草が少し。しずくや水たまりは描かない
-2. うんち：口に、むすんだ小さな茶色のマナー袋（中身は見えない）をくわえて、得意げにおすわり。袋に小さな肉球マーク
+2. うんち：すっきりした満足顔でおすわり。まわりに小さなキラキラ。横の地面に、小さなスコップと、口をむすんだ茶色のマナー袋（中身は見えない、肉球マーク）が置いてある。犬は袋にさわらない
 3. おみず：水色の水が入った犬用の丸いお皿から、ぺろぺろ水を飲んでいる
 4. ごはん：オレンジ色の犬用のお皿（カリカリのドッグフード入り）の前で、目をきらきらさせておすわり
 
@@ -52,6 +52,6 @@ Please draw one small icon for a button in a smartphone app.
 ```
 Scenes:
 1. Pee: sniffing a small yellow utility pole (or a small tree), side view. A little grass at its base. No droplets or puddles
-2. Poop: sitting proudly, holding a small tied brown waste bag in its mouth (contents not visible), a tiny paw mark on the bag
+2. Poop: sitting with a relieved, satisfied smile, a few small sparkles around. On the ground beside it, a small scoop and a tied brown waste bag (contents not visible, tiny paw mark). The dog does not touch the bag
 3. Water: lapping water from a round dog bowl of light-blue water
 4. Food: sitting with sparkling eyes in front of an orange dog bowl of dry kibble
