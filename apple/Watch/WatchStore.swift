@@ -49,6 +49,8 @@ final class WatchStore: NSObject, ObservableObject {
 
     var selectedDogs: [Dog] { dogs.filter { selectedDogIDs.contains($0.id) } }
 
+    var selectionLabel: String { DogSelection.label(selectedDogIDs, dogs: dogs) }
+
     func dog(_ id: UUID) -> Dog? { dogs.first { $0.id == id } }
 
     // MARK: Recording
@@ -93,14 +95,10 @@ final class WatchStore: NSObject, ObservableObject {
         saved.own.removeAll { $0.date < cutoff }
         if saved.removed.count > 500 { saved.removed.removeFirst(saved.removed.count - 500) }
         events = WalkLog.merge(saved.own, snap?.events ?? [], deleted: Set(saved.removed))
-        // Dogs added on the iPhone are selected by default; dogs that no longer exist are dropped.
-        let valid = Set(dogs.map(\.id))
-        let known = Set(UserDefaults.standard.array(forKey: "knownDogs") as? [String] ?? []).compactMap(UUID.init(uuidString:))
-        let newDogs = valid.subtracting(known)
-        if !newDogs.isEmpty || !selectedDogIDs.isSubset(of: valid) {
-            selectedDogIDs = selectedDogIDs.intersection(valid).union(newDogs)
-        }
-        UserDefaults.standard.set(valid.map(\.uuidString), forKey: "knownDogs")
+        // Dogs that no longer exist are dropped. New dogs are NOT added by themselves
+        // (records must not go to a dog by surprise); the iPhone's choice arrives with the snapshot.
+        let cleaned = DogSelection.cleaned(selectedDogIDs, dogs: dogs)
+        if cleaned != selectedDogIDs { selectedDogIDs = cleaned }
         updateComplication()
     }
 
@@ -117,6 +115,15 @@ final class WatchStore: NSObject, ObservableObject {
     private func apply(snapshot: WatchSync.Snapshot, author: String?) {
         if let current = saved.snapshot, current.madeAt > snapshot.madeAt { return }
         saved.snapshot = snapshot
+        // Follow the iPhone when its choice of dogs changes; a choice made here stays until then.
+        if let phone = snapshot.selected.map({ Set($0) }) {
+            let key = "phoneSelected"
+            let last = Set((UserDefaults.standard.array(forKey: key) as? [String] ?? []).compactMap(UUID.init(uuidString:)))
+            if phone != last {
+                UserDefaults.standard.set(phone.map(\.uuidString), forKey: key)
+                selectedDogIDs = phone
+            }
+        }
         if let author { UserDefaults.standard.set(author, forKey: "authorName") }
         persist()
         rebuild()

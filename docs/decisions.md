@@ -48,3 +48,15 @@
 - **プライバシーポリシーとサポートのページ**を `site/` に作り、GitHub Pages で公開：https://shinichi-sunayama.github.io/chiwa-walk/privacy.html ・ https://shinichi-sunayama.github.io/chiwa-walk/support.html 。連絡先は pickle-score と同じ工房のメール。iCloud・家族共有・応援の購入（1.0 で入る予定のもの）も書いてある。
 - **文字盤のバンドル ID を `com.ohagikinakokobo.osanpo.watchkitapp.widget` に変更**（2026-11-17）：`…watchkitapp.complication` は Apple Developer で「使用できない（not available）」と出て登録できなかった（一覧にも存在しない）。
 - **初めての TestFlight**（2026-11-17）：ユーザーが App Group・iCloud Container・バンドル ID 3つ・App Store Connect のアプリ・Secrets 4つを登録。クラウドで署名して **1.0.0（ビルド 10）** を App Store Connect に上げた（run 44036587029、Upload succeeded）。ビルド番号は Actions の実行番号。
+
+## 2026-11-17 初めての試用の感想から（ユーザー決定）
+
+- **犬の選び方**：「どの犬が選ばれているか分かりにくい」「意図しない犬に回数がつく」。原因は、犬をタップすると“追加”になる（切り替わらない）こと、犬を足すと自動で選ばれること、Watch と iPhone の選択が別々だったこと。
+  - タップ＝**その犬だけに切り替え**。ながおし＝追加・はずす。2匹以上なら「みんな」。選ばれた犬はオレンジの枠とチェック。
+  - ボタンのすぐ上に「**おはぎ に きろく**」と顔つきで出す。Watch はいちばん上にオレンジの帯で「おはぎ ›」（タップで選び直し）。
+  - 犬を足しても選択は変えない（何も選んでいないときだけ新しい犬）。
+  - **Watch は iPhone の選択に合わせる**（iPhone で選び直したときだけ。Watch で選んだものはそれまで残る）。スナップショットに `selected` を追加（古い形式も読める）。
+  - 計算は WalkCore の `DogSelection`（テストあり、計21件）。
+- **ボタンの表現**：「手首でうんち・おしっこがそのまま見えるのはアウト」「絵もリアル」。
+  - Watch のボタンは**絵だけ（文字なし）**、iPhone は絵の下に小さく文字。文字盤・一覧・Watch の印は 💩💦 をやめ、🟤🟡（文字盤は ●・しずく）に。
+  - ボタンの絵は **おはぎが主役の場面**に描き直す（おしっこ＝電柱をくんくん、うんち＝マナー袋をくわえておすわり、おみず＝水を飲む、ごはん＝お皿の前でおすわり）。うんち・しずくそのものは描かない。`docs/art/buttons.md` を改訂、Gemini で作成待ち。

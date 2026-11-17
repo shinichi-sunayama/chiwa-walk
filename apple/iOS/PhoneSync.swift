@@ -33,7 +33,8 @@ final class PhoneSync: NSObject, WCSessionDelegate {
             dogs: dogs,
             events: WatchSync.snapshotEvents(dogs: model.dogs, events: model.events, now: now),
             madeAt: now,
-            buttons: model.buttons)
+            buttons: model.buttons,
+            selected: Array(model.selectedDogIDs))
         if var dict = try? WatchSync.encode(snapshot) {
             dict["author"] = model.authorName // records made on the Watch carry the same name
             try? session.updateApplicationContext(dict)

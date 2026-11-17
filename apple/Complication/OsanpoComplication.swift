@@ -4,7 +4,7 @@ import WidgetKit
 
 // Watch face complication: 「うんち 3時間前」 for the dogs walking now (spec 3.2 ①).
 // The Watch app writes ComplicationData to the App Group; this extension only reads it.
-// Facts only (elapsed time); never any judgement.
+// Facts only (elapsed time); never any judgement. Quiet marks (a dot for poop, a drop for pee), no 💩 on the wrist.
 
 struct WalkEntry: TimelineEntry {
     let date: Date
@@ -48,24 +48,24 @@ struct WalkComplicationView: View {
             switch family {
             case .accessoryCircular:
                 VStack(spacing: 0) {
-                    Text("💩").font(.system(size: 16))
+                    Image(systemName: "circle.fill").font(.system(size: 11))
                     Text(short(entry.data?.latestPoop))
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .minimumScaleFactor(0.6).lineLimit(1)
                 }
             case .accessoryCorner:
-                Text("💩").font(.system(size: 20))
+                Image(systemName: "circle.fill").font(.system(size: 14))
                     .widgetLabel(short(entry.data?.latestPoop))
             case .accessoryInline:
-                Text("💩 \(short(entry.data?.latestPoop))")
+                Text("\(Image(systemName: "circle.fill")) \(short(entry.data?.latestPoop))")
             default: // rectangular
                 VStack(alignment: .leading, spacing: 1) {
                     if let lines = entry.data?.lines, !lines.isEmpty {
                         ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
                             HStack(spacing: 4) {
                                 Text(line.dogName).lineLimit(1).frame(maxWidth: 62, alignment: .leading)
-                                Text("💩\(short(line.lastPoop))")
-                                Text("💦\(short(line.lastPee))")
+                                Text("\(Image(systemName: "circle.fill"))\(short(line.lastPoop))")
+                                Text("\(Image(systemName: "drop.fill"))\(short(line.lastPee))")
                             }
                             .font(.system(size: 14, weight: .medium, design: .rounded))
                             .minimumScaleFactor(0.7)
@@ -89,7 +89,7 @@ struct OsanpoComplication: Widget {
             WalkComplicationView(entry: entry)
         }
         .configurationDisplayName("おさんぽ帳")
-        .description("前回の うんち・おしっこ からの じかん")
+        .description("前回の トイレからの じかん（● うんち・しずく おしっこ）")
         .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline, .accessoryCorner])
     }
 }

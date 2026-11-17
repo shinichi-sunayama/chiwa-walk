@@ -55,29 +55,100 @@ struct TodayView: View {
 
     // MARK: Dogs walking now
 
+    /// Tap a dog = switch to that dog only. Long press = add / remove (to record for several at once).
+    /// 「みんな」 = every dog. The choice is shown big, so it is always clear who a tap records for.
     private var dogChips: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("いっしょの わんちゃん").font(Theme.font(13)).foregroundStyle(Theme.muted)
+        VStack(alignment: .leading, spacing: 8) {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     ForEach(model.dogs) { dog in
-                        let on = model.selectedDogIDs.contains(dog.id)
-                        Button {
-                            if on { model.selectedDogIDs.remove(dog.id) } else { model.selectedDogIDs.insert(dog.id) }
-                        } label: {
-                            VStack(spacing: 4) {
-                                DogFace(dog: dog, size: 56, selected: on)
-                                Text(dog.name).font(Theme.font(13)).foregroundStyle(on ? Theme.text : Theme.muted).lineLimit(1)
-                            }
-                            .frame(width: 70)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("\(dog.name)\(on ? "（えらんでいる）" : "")")
+                        dogChip(dog)
                     }
+                    if model.dogs.count >= 2 { allChip }
                 }
+                .padding(.vertical, 4)
+            }
+            if model.dogs.count >= 2 {
+                Text("タップで きりかえ・ながおしで ふやす")
+                    .font(Theme.font(12)).foregroundStyle(Theme.muted)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func dogChip(_ dog: Dog) -> some View {
+        let on = model.selectedDogIDs.contains(dog.id)
+        return VStack(spacing: 4) {
+            DogFace(dog: dog, size: 56, selected: on)
+                .overlay(alignment: .bottomTrailing) {
+                    if on {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 20)).foregroundStyle(.white, Theme.orange)
+                            .offset(x: 4, y: 4)
+                    }
+                }
+            Text(dog.name).font(Theme.font(13)).foregroundStyle(on ? Theme.text : Theme.muted).lineLimit(1)
+        }
+        .frame(width: 76)
+        .padding(.vertical, 8)
+        .background(RoundedRectangle(cornerRadius: 18).fill(on ? Theme.orange.opacity(0.18) : Color.clear))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(on ? Theme.orange : Color.clear, lineWidth: 2))
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation(.snappy) { model.selectedDogIDs = DogSelection.only(dog.id) }
+        }
+        .onLongPressGesture {
+            let next = DogSelection.toggled(dog.id, in: model.selectedDogIDs)
+            guard !next.isEmpty else { return } // keep at least one dog
+            withAnimation(.snappy) { model.selectedDogIDs = next }
+            Haptics.play(.walk)
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(dog.name)\(on ? "（えらんでいる）" : "")")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { model.selectedDogIDs = DogSelection.only(dog.id) }
+        .accessibilityAction(named: on ? "はずす" : "ふやす") {
+            let next = DogSelection.toggled(dog.id, in: model.selectedDogIDs)
+            if !next.isEmpty { model.selectedDogIDs = next }
+        }
+    }
+
+    private var allChip: some View {
+        let on = DogSelection.isAll(model.selectedDogIDs, dogs: model.dogs)
+        return Button {
+            withAnimation(.snappy) { model.selectedDogIDs = DogSelection.all(model.dogs) }
+        } label: {
+            VStack(spacing: 4) {
+                ZStack {
+                    Circle().fill(on ? Theme.card : Theme.chip)
+                    Image(systemName: "pawprint.fill").font(.system(size: 22))
+                        .foregroundStyle(on ? Theme.orange : Theme.muted)
+                }
+                .frame(width: 56, height: 56)
+                .overlay(Circle().stroke(on ? Theme.orange : Theme.lip, lineWidth: on ? 3 : 1))
+                Text("みんな").font(Theme.font(13)).foregroundStyle(on ? Theme.text : Theme.muted)
+            }
+            .frame(width: 76)
+            .padding(.vertical, 8)
+            .background(RoundedRectangle(cornerRadius: 18).fill(on ? Theme.orange.opacity(0.18) : Color.clear))
+            .overlay(RoundedRectangle(cornerRadius: 18).stroke(on ? Theme.orange : Color.clear, lineWidth: 2))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("みんな\(on ? "（えらんでいる）" : "")")
+    }
+
+    /// 「おはぎ に きろく」 right above the buttons.
+    private var recordTarget: some View {
+        HStack(spacing: 6) {
+            HStack(spacing: -10) {
+                ForEach(model.selectedDogs.prefix(4)) { dog in DogFace(dog: dog, size: 30) }
+            }
+            Text(model.selectionLabel).font(Theme.font(17)).foregroundStyle(Theme.text)
+                .lineLimit(1).minimumScaleFactor(0.6)
+            Text("に きろく").font(Theme.font(15)).foregroundStyle(Theme.muted)
+            Spacer(minLength: 0)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: Walk start / end
@@ -111,7 +182,8 @@ struct TodayView: View {
     // MARK: One-tap buttons
 
     private var buttons: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 8) {
+            if !model.selectedDogIDs.isEmpty { recordTarget }
             // Two buttons are extra tall; with おみず / ごはん turned on they share rows of two.
             let rows = EventKind.rows(model.buttons)
             let height: CGFloat = rows.count == 1 ? 150 : 104
@@ -120,13 +192,15 @@ struct TodayView: View {
                     HStack(spacing: 12) {
                         ForEach(row, id: \.self) { kind in
                             Button { model.record(kind) } label: {
-                                VStack(spacing: 4) {
-                                    KindIcon(kind: kind, size: rows.count == 1 ? 46 : 34)
-                                    Text(kind.label).font(Theme.font(rows.count == 1 ? 24 : 20))
+                                // Quiet labels: the picture carries the meaning, the word is small.
+                                VStack(spacing: 6) {
+                                    KindIcon(kind: kind, size: rows.count == 1 ? 58 : 42)
+                                    Text(kind.label).font(Theme.font(rows.count == 1 ? 14 : 12)).opacity(0.85)
                                 }
                             }
                             .buttonStyle(LipButtonStyle(fill: kind.fill, lip: kind.lip, foreground: kind.ink))
                             .frame(height: height)
+                            .accessibilityLabel(kind.label)
                         }
                     }
                 }
@@ -146,7 +220,7 @@ struct TodayView: View {
             VStack(spacing: 10) {
                 ForEach(model.dogs) { dog in
                     HStack(spacing: 12) {
-                        DogFace(dog: dog, size: 44)
+                        DogFace(dog: dog, size: 44, selected: model.selectedDogIDs.contains(dog.id))
                         VStack(alignment: .leading, spacing: 3) {
                             Text(dog.name).font(Theme.font(16)).foregroundStyle(Theme.text)
                             factLine(.poop, dog: dog, now: context.date)
@@ -156,6 +230,8 @@ struct TodayView: View {
                     }
                     .padding(12)
                     .background(RoundedRectangle(cornerRadius: 16).fill(Theme.card))
+                    .overlay(RoundedRectangle(cornerRadius: 16)
+                        .stroke(model.selectedDogIDs.contains(dog.id) ? Theme.orange.opacity(0.6) : .clear, lineWidth: 2))
                 }
             }
         }

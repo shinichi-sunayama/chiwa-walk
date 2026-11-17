@@ -126,7 +126,7 @@ final class WatchSyncTests: XCTestCase {
 
     func testSnapshotRoundTripAndBadInput() throws {
         let dogs = [Dog(name: "しらたま", avatar: .shiratama, order: 0, photo: Data([0xFF, 0xD8, 0x01]))]
-        let snap = WatchSync.Snapshot(dogs: dogs, events: [], madeAt: Date(timeIntervalSince1970: 1_800_000_000), buttons: [.pee, .poop, .water])
+        let snap = WatchSync.Snapshot(dogs: dogs, events: [], madeAt: Date(timeIntervalSince1970: 1_800_000_000), buttons: [.pee, .poop, .water], selected: [dogs[0].id])
         let dict = try WatchSync.encode(snap)
         XCTAssertEqual(WatchSync.decode(WatchSync.Snapshot.self, from: dict), snap)
         XCTAssertNil(WatchSync.decode(WatchSync.Snapshot.self, from: ["other": 1]))
@@ -136,6 +136,7 @@ final class WatchSyncTests: XCTestCase {
         XCTAssertEqual(decoded?.dogs.first?.name, "きなこ")
         XCTAssertNil(decoded?.dogs.first?.photo)
         XCTAssertNil(decoded?.buttons)
+        XCTAssertNil(decoded?.selected)
         XCTAssertNil(WatchSync.decode(WatchSync.Snapshot.self, from: [WatchSync.key: Data("x".utf8)]))
     }
 
@@ -209,5 +210,41 @@ final class ComplicationTests: XCTestCase {
         XCTAssertEqual(data.lines.map(\.dogName), ["犬0", "犬1", "犬2"])
         XCTAssertNil(data.latestPoop)
         XCTAssertNil(ComplicationData.decode(Data("bad".utf8)))
+    }
+}
+
+final class DogSelectionTests: XCTestCase {
+    let a = Dog(name: "おはぎ", avatar: .ohagi, order: 0)
+    let b = Dog(name: "きなこ", avatar: .kinako, order: 1)
+    let c = Dog(name: "しらたま", avatar: .shiratama, order: 2)
+
+    func testTapSwitchesAndToggleAdds() {
+        XCTAssertEqual(DogSelection.only(b.id), [b.id])
+        XCTAssertEqual(DogSelection.toggled(b.id, in: [a.id]), [a.id, b.id])
+        XCTAssertEqual(DogSelection.toggled(a.id, in: [a.id, b.id]), [b.id])
+        XCTAssertTrue(DogSelection.isAll(DogSelection.all([a, b]), dogs: [a, b]))
+        XCTAssertFalse(DogSelection.isAll([a.id], dogs: [a, b]))
+        XCTAssertFalse(DogSelection.isAll([], dogs: []))
+    }
+
+    func testAddingADogKeepsTheChoice() {
+        XCTAssertEqual(DogSelection.afterAdding(b.id, to: [a.id]), [a.id])
+        XCTAssertEqual(DogSelection.afterAdding(b.id, to: []), [b.id])
+    }
+
+    func testCleanedDropsMissingDogsAndFallsBackToFirst() {
+        XCTAssertEqual(DogSelection.cleaned([a.id, UUID()], dogs: [a, b]), [a.id])
+        XCTAssertEqual(DogSelection.cleaned([UUID()], dogs: [b, a]), [a.id])
+        XCTAssertEqual(DogSelection.cleaned([UUID()], dogs: []), [])
+    }
+
+    func testLabel() {
+        let dogs = [c, b, a]
+        XCTAssertEqual(DogSelection.label([b.id], dogs: dogs), "きなこ")
+        XCTAssertEqual(DogSelection.label([b.id, a.id], dogs: dogs), "おはぎ・きなこ")
+        XCTAssertEqual(DogSelection.label([a.id, b.id, c.id], dogs: dogs), "みんな（3びき）")
+        let d = Dog(name: "ようかん", avatar: .yokan, order: 3)
+        XCTAssertEqual(DogSelection.label([a.id, b.id, c.id], dogs: dogs + [d]), "おはぎ・きなこ ほか1")
+        XCTAssertEqual(DogSelection.label([], dogs: dogs), "")
     }
 }

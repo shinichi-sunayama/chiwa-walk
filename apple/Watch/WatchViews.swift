@@ -35,31 +35,28 @@ struct WatchRootView: View {
     }
 }
 
-/// Page 1: four big buttons. One tap = recorded for every selected dog, with a wrist tap to confirm.
+/// Page 1: who the tap is for (big, at the top) and the buttons. Buttons show pictures only (no words on
+/// the wrist). One tap = recorded for every selected dog, with a wrist tap to confirm.
 struct WatchRecordView: View {
     @EnvironmentObject var store: WatchStore
     @State private var hideTask: Task<Void, Never>?
 
     var body: some View {
-        let disabled = store.selectedDogIDs.isEmpty
         let rows = EventKind.rows(store.buttons)
-        VStack(spacing: 7) {
+        VStack(spacing: 6) {
+            NavigationLink { WatchDogPicker() } label: { target }
+                .buttonStyle(.plain)
+                .accessibilityLabel("\(store.selectionLabel) に きろく。えらびなおす")
             ForEach(rows, id: \.self) { row in
                 HStack(spacing: 6) {
                     ForEach(row, id: \.self) { kind in button(kind, big: rows.count == 1) }
                 }
             }
         }
-        .disabled(disabled)
-        .opacity(disabled ? 0.4 : 1)
         .padding(.horizontal, 2)
         .padding(.bottom, 4)
         .overlay { if let made = store.lastRecord { confirmation(made) } }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                NavigationLink { WatchDogPicker() } label: { dogFaces }
-                    .accessibilityLabel("いっしょの わんちゃんを えらぶ")
-            }
             ToolbarItem(placement: .topBarTrailing) { walkButton }
         }
         .onChange(of: store.lastRecord) { _, new in scheduleHide(new) }
@@ -67,25 +64,30 @@ struct WatchRecordView: View {
 
     private func button(_ kind: EventKind, big: Bool) -> some View {
         Button { store.record(kind) } label: {
-            VStack(spacing: big ? 4 : 0) {
-                KindIcon(kind: kind, size: big ? 40 : 26)
-                Text(kind.label).font(Theme.font(big ? 18 : 14)).lineLimit(1).minimumScaleFactor(0.7)
-            }
+            KindIcon(kind: kind, size: big ? 52 : 30)
         }
         .buttonStyle(LipButtonStyle(fill: kind.fill, lip: kind.lip, corner: 16, depth: 4, foreground: kind.ink))
+        .disabled(store.selectedDogIDs.isEmpty)
+        .opacity(store.selectedDogIDs.isEmpty ? 0.4 : 1)
+        .accessibilityLabel(kind.label)
     }
 
-    private var dogFaces: some View {
-        HStack(spacing: -6) {
-            let shown = store.selectedDogs.prefix(3)
-            if shown.isEmpty {
-                Image(systemName: "pawprint").foregroundStyle(Theme.red)
+    /// 「おはぎ」 with the face, in an orange pill: who the next tap records for. Tap to change.
+    private var target: some View {
+        HStack(spacing: 5) {
+            HStack(spacing: -8) {
+                ForEach(store.selectedDogs.prefix(3)) { dog in DogFace(dog: dog, size: 24) }
             }
-            ForEach(Array(shown)) { dog in DogFace(dog: dog, size: 24) }
-            if store.selectedDogs.count > 3 {
-                Text("+\(store.selectedDogs.count - 3)").font(Theme.font(11)).padding(.leading, 8)
-            }
+            Text(store.selectedDogIDs.isEmpty ? "わんちゃんを えらぶ" : store.selectionLabel)
+                .font(Theme.font(14)).lineLimit(1).minimumScaleFactor(0.6)
+            Spacer(minLength: 0)
+            Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold)).opacity(0.7)
         }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Capsule().fill(Theme.orange.opacity(0.35)))
+        .overlay(Capsule().stroke(Theme.orange, lineWidth: 1.5))
     }
 
     private var walking: Bool {
@@ -106,10 +108,10 @@ struct WatchRecordView: View {
         let kind = made.first?.kind ?? .pee
         return VStack(spacing: 6) {
             Image(systemName: "checkmark.circle.fill").font(.system(size: 34)).foregroundStyle(Theme.green)
-            HStack(spacing: 4) {
-                KindIcon(kind: kind, size: 18)
-                Text(kind.label).font(Theme.font(17))
+            HStack(spacing: -6) {
+                ForEach(made.compactMap { store.dog($0.dogID) }.prefix(3)) { dog in DogFace(dog: dog, size: 26) }
             }
+            KindIcon(kind: kind, size: 20)
             Text(names).font(Theme.font(13)).lineLimit(2).minimumScaleFactor(0.6).multilineTextAlignment(.center)
             Button("とりけす") { store.undoLastRecord() }
                 .font(Theme.font(14))
@@ -133,25 +135,65 @@ struct WatchRecordView: View {
     }
 }
 
-/// Choose which dogs are walking now (remembered for next time).
+/// Choose who the buttons record for. Tap a dog = that dog only (and back). 「みんな」 = every dog.
+/// The check marks below add or remove one dog, to record for several.
 struct WatchDogPicker: View {
     @EnvironmentObject var store: WatchStore
+    @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        List(store.dogs) { dog in
-            let on = store.selectedDogIDs.contains(dog.id)
-            Button {
-                if on { store.selectedDogIDs.remove(dog.id) } else { store.selectedDogIDs.insert(dog.id) }
-            } label: {
-                HStack {
-                    DogFace(dog: dog, size: 30, selected: on)
-                    Text(dog.name).font(Theme.font(15))
-                    Spacer()
-                    if on { Image(systemName: "checkmark").foregroundStyle(Theme.orange) }
+        List {
+            Section {
+                ForEach(store.dogs) { dog in
+                    let on = store.selectedDogIDs == [dog.id]
+                    Button {
+                        store.selectedDogIDs = DogSelection.only(dog.id)
+                        dismiss()
+                    } label: {
+                        HStack {
+                            DogFace(dog: dog, size: 30, selected: on)
+                            Text(dog.name).font(Theme.font(15)).lineLimit(1)
+                            Spacer()
+                            if on { Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.orange) }
+                        }
+                    }
+                }
+                if store.dogs.count >= 2 {
+                    Button {
+                        store.selectedDogIDs = DogSelection.all(store.dogs)
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Image(systemName: "pawprint.fill").foregroundStyle(Theme.orange).frame(width: 30)
+                            Text("みんな").font(Theme.font(15))
+                            Spacer()
+                            if DogSelection.isAll(store.selectedDogIDs, dogs: store.dogs) {
+                                Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.orange)
+                            }
+                        }
+                    }
+                }
+            }
+            if store.dogs.count >= 3 {
+                Section("えらんで まとめる") {
+                    ForEach(store.dogs) { dog in
+                        let on = store.selectedDogIDs.contains(dog.id)
+                        Button {
+                            let next = DogSelection.toggled(dog.id, in: store.selectedDogIDs)
+                            if !next.isEmpty { store.selectedDogIDs = next }
+                        } label: {
+                            HStack {
+                                Text(dog.name).font(Theme.font(14)).lineLimit(1)
+                                Spacer()
+                                Image(systemName: on ? "checkmark.square.fill" : "square")
+                                    .foregroundStyle(on ? Theme.orange : .secondary)
+                            }
+                        }
+                    }
                 }
             }
         }
-        .navigationTitle("いっしょの子")
+        .navigationTitle("だれの きろく？")
     }
 }
 

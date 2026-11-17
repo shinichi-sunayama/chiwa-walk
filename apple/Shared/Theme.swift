@@ -42,8 +42,8 @@ enum Theme {
 extension EventKind {
     var emoji: String {
         switch self {
-        case .pee: return "💦"
-        case .poop: return "💩"
+        case .pee: return "🟡" // quiet marks in the button colours (no 💩 on screen)
+        case .poop: return "🟤"
         case .water: return "💧"
         case .food: return "🍽️"
         case .walkStart: return "🐾"

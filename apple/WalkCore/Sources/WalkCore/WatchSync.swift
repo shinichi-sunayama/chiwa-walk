@@ -31,13 +31,16 @@ public enum WatchSync {
         public var madeAt: Date
         /// One-tap buttons chosen in the iPhone's せってい (nil in older snapshots = the standard two).
         public var buttons: [EventKind]?
+        /// Dogs chosen on the iPhone (nil in older snapshots). The Watch follows it when it changes.
+        public var selected: [UUID]?
 
-        public init(dogs: [Dog], events: [WalkEvent], madeAt: Date, buttons: [EventKind]? = nil) {
+        public init(dogs: [Dog], events: [WalkEvent], madeAt: Date, buttons: [EventKind]? = nil, selected: [UUID]? = nil) {
             self.version = WatchSync.version
             self.dogs = dogs
             self.events = events
             self.madeAt = madeAt
             self.buttons = buttons
+            self.selected = selected
         }
     }
 

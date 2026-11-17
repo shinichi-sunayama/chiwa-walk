@@ -9,7 +9,11 @@ final class AppModel: ObservableObject {
     @Published private(set) var dogs: [Dog] = []
     @Published private(set) var events: [WalkEvent] = []
     @Published var selectedDogIDs: Set<UUID> = [] {
-        didSet { saveSelection() }
+        didSet {
+            guard selectedDogIDs != oldValue else { return }
+            UserDefaults.standard.set(selectedDogIDs.map(\.uuidString), forKey: "selectedDogs")
+            onChange?() // the Watch follows the iPhone's choice
+        }
     }
     @Published var authorName: String = UserDefaults.standard.string(forKey: "authorName") ?? "" {
         didSet {
@@ -38,8 +42,9 @@ final class AppModel: ObservableObject {
 
     init(persistence: PersistenceController) {
         self.persistence = persistence
+        // Set before reload() (observers don't run here); reload() then drops dogs that no longer exist.
+        selectedDogIDs = Set((UserDefaults.standard.array(forKey: "selectedDogs") as? [String] ?? []).compactMap(UUID.init(uuidString:)))
         reload()
-        loadSelection()
         observer = NotificationCenter.default.addObserver(
             forName: .NSManagedObjectContextObjectsDidChange, object: persistence.container.viewContext, queue: .main
         ) { [weak self] _ in
@@ -60,8 +65,8 @@ final class AppModel: ObservableObject {
 
         if newDogs != dogs { dogs = newDogs }
         if newEvents != events { events = newEvents }
-        let valid = Set(dogs.map(\.id))
-        if !selectedDogIDs.isSubset(of: valid) { selectedDogIDs = selectedDogIDs.intersection(valid) }
+        let cleaned = DogSelection.cleaned(selectedDogIDs, dogs: dogs)
+        if cleaned != selectedDogIDs { selectedDogIDs = cleaned }
         onChange?()
     }
 
@@ -142,7 +147,7 @@ final class AppModel: ObservableObject {
         obj.createdAt = .now
         obj.household = household()
         save()
-        if let id = obj.id { selectedDogIDs.insert(id) }
+        if let id = obj.id { selectedDogIDs = DogSelection.afterAdding(id, to: selectedDogIDs) }
     }
 
     func updateDog(_ dog: Dog) {
@@ -199,15 +204,5 @@ final class AppModel: ObservableObject {
 
     @Published var saveError: String?
 
-    private func saveSelection() {
-        UserDefaults.standard.set(selectedDogIDs.map(\.uuidString), forKey: "selectedDogs")
-    }
-
-    private func loadSelection() {
-        if let saved = UserDefaults.standard.array(forKey: "selectedDogs") as? [String] {
-            selectedDogIDs = Set(saved.compactMap(UUID.init(uuidString:))).intersection(dogs.map(\.id))
-        } else {
-            selectedDogIDs = Set(dogs.map(\.id))
-        }
-    }
+    var selectionLabel: String { DogSelection.label(selectedDogIDs, dogs: dogs) }
 }
