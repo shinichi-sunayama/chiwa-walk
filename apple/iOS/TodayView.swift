@@ -158,11 +158,15 @@ struct TodayView: View {
     }
 
     private var walkBar: some View {
-        TimelineView(.periodic(from: .now, by: 30)) { context in
+        TimelineView(.periodic(from: .now, by: 15)) { context in
             HStack {
                 if let start = walkingSince {
-                    Text("おさんぽ中　\(WalkLog.durationText(from: start, to: context.date))")
-                        .font(Theme.font(17)).foregroundStyle(Theme.green)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("おさんぽ中　\(WalkLog.durationText(from: start, to: context.date))")
+                            .font(Theme.font(17)).foregroundStyle(Theme.green)
+                        Text("\(start.formatted(date: .omitted, time: .shortened)) から")
+                            .font(Theme.font(12)).foregroundStyle(Theme.muted)
+                    }
                     Spacer()
                     Button("おわり") { model.record(.walkEnd) }
                         .font(Theme.font(17)).buttonStyle(.borderedProminent).tint(Theme.green)
@@ -248,17 +252,21 @@ struct TodayView: View {
     // MARK: Today's list
 
     private var todayList: some View {
-        let today = WalkLog.events(on: .now, in: model.events, calendar: .current)
+        let today = Calendar.current.startOfDay(for: .now)
+        let summary = Walks.summaries(events: model.events, calendar: .current)[today]
         return VStack(alignment: .leading, spacing: 8) {
-            Text("きょうの きろく").font(Theme.font(15)).foregroundStyle(Theme.text)
-            if today.isEmpty {
-                Text("まだ ありません").font(Theme.font(13)).foregroundStyle(Theme.muted)
+            HStack {
+                Text("きょうの きろく").font(Theme.font(15)).foregroundStyle(Theme.text)
+                Spacer()
+                if let summary, summary.walks > 0 {
+                    Label(Walks.walkText(summary), systemImage: "figure.walk")
+                        .font(Theme.font(13)).foregroundStyle(Theme.green)
+                }
             }
-            ForEach(today) { e in
-                EventRow(event: e)
-                    .contextMenu {
-                        Button("けす", systemImage: "trash", role: .destructive) { model.remove([e.id]) }
-                    }
+            if summary == nil {
+                Text("まだ ありません").font(Theme.font(13)).foregroundStyle(Theme.muted)
+            } else {
+                DayTimeline(day: today)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

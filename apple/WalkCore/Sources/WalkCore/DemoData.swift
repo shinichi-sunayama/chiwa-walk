@@ -29,12 +29,28 @@ public enum DemoData {
         add(.water, both, 148, "パパ")
         // Around noon
         add(.pee, [kinakoID], 40, "ママ")
-        add(.pee, [ohagiID], 22, "ママ")
+        // Walking now (Ohagi only), started 14 minutes ago
+        add(.walkStart, [ohagiID], 14, "ママ")
+        add(.pee, [ohagiID], 8, "ママ")
         // Yesterday evening
         add(.walkStart, both, 1_080, "ママ")
         add(.pee, both, 1_072, "ママ")
         add(.poop, both, 1_060, "ママ")
         add(.walkEnd, both, 1_045, "ママ")
+        // Earlier days, so the calendar has walks to show (one or two a day, a few days without)
+        for d in 2...24 where d % 7 != 3 {
+            let base = Double(d) * 1_440
+            let length = Double(22 + (d * 7) % 20)
+            add(.walkStart, both, base + 600, "パパ")
+            add(.pee, both, base + 590, "パパ")
+            add(.poop, [d % 2 == 0 ? ohagiID : kinakoID], base + 585, "パパ")
+            add(.walkEnd, both, base + 600 - length, "パパ")
+            if d % 3 != 0 {
+                add(.walkStart, both, base - 60, "ママ")
+                add(.pee, both, base - 70, "ママ")
+                add(.walkEnd, both, base - 60 - length / 2 - 10, "ママ")
+            }
+        }
         return out.sorted { $0.date > $1.date }
     }
 }

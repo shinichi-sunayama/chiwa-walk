@@ -48,6 +48,7 @@ struct WatchRecordView: View {
             NavigationLink { WatchDogPicker() } label: { target }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(store.selectionLabel) に きろく。えらびなおす")
+            if let start = walkStart { walkTimer(start) }
             ForEach(rows, id: \.self) { row in
                 HStack(spacing: 6) {
                     ForEach(row, id: \.self) { kind in button(kind, big: rows.count == 1) }
@@ -91,8 +92,25 @@ struct WatchRecordView: View {
         .overlay(Capsule().stroke(Theme.orange, lineWidth: 1.5))
     }
 
-    private var walking: Bool {
-        store.selectedDogs.contains { WalkLog.walkInProgress(dog: $0.id, in: store.events, now: .now) != nil }
+    /// Start of the walk in progress for the chosen dogs (the earliest), or nil.
+    private var walkStart: Date? {
+        store.selectedDogs.compactMap { WalkLog.walkInProgress(dog: $0.id, in: store.events, now: .now) }.min()
+    }
+
+    private var walking: Bool { walkStart != nil }
+
+    /// 「🚶 12:34 おさんぽ中」, counting up by itself.
+    private func walkTimer(_ start: Date) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "figure.walk")
+            Text(start, style: .timer).monospacedDigit()
+            Spacer(minLength: 0)
+            Text("おさんぽ中")
+        }
+        .font(Theme.font(13))
+        .foregroundStyle(Theme.green)
+        .padding(.horizontal, 6)
+        .accessibilityElement(children: .combine)
     }
 
     private var walkButton: some View {
@@ -112,7 +130,16 @@ struct WatchRecordView: View {
             HStack(spacing: -6) {
                 ForEach(made.compactMap { store.dog($0.dogID) }.prefix(3)) { dog in DogFace(dog: dog, size: 26) }
             }
-            KindIcon(kind: kind, size: 20)
+            switch kind {
+            case .walkStart:
+                Text("おさんぽ スタート").font(Theme.font(15)).foregroundStyle(Theme.green)
+            case .walkEnd:
+                let minutes = Walks.sessions(in: store.events).first { $0.endEventIDs.contains(made[0].id) }?.minutes
+                Text(minutes.map { "おさんぽ \(WalkLog.durationText(minutes: $0))" } ?? "おさんぽ おわり")
+                    .font(Theme.font(15)).foregroundStyle(Theme.green)
+            default:
+                KindIcon(kind: kind, size: 20)
+            }
             Text(names).font(Theme.font(13)).lineLimit(2).minimumScaleFactor(0.6).multilineTextAlignment(.center)
             Button("とりけす") { store.undoLastRecord() }
                 .font(Theme.font(14))
@@ -206,6 +233,9 @@ struct WatchStatusView: View {
         TimelineView(.periodic(from: .now, by: 60)) { context in
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
+                    let today = Walks.summaries(events: store.events, calendar: .current)[Calendar.current.startOfDay(for: context.date)]
+                    Label(today.map(Walks.walkText) ?? "おさんぽ なし", systemImage: "figure.walk")
+                        .font(Theme.font(13)).foregroundStyle(Theme.green)
                     ForEach(store.dogs) { dog in
                         VStack(alignment: .leading, spacing: 2) {
                             HStack(spacing: 6) {

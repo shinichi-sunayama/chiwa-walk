@@ -128,6 +128,15 @@ final class AppModel: ObservableObject {
         save()
     }
 
+    /// Move records to a new time (a walk's start or end, for every dog on it).
+    func setDate(_ ids: [UUID], to date: Date) {
+        for id in ids {
+            guard var e = events.first(where: { $0.id == id }) else { continue }
+            e.date = date
+            update(e)
+        }
+    }
+
     func apply(_ op: WatchSync.Operation) {
         switch op {
         case .add(let new): add(new)

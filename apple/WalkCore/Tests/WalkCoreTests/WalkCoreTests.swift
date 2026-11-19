@@ -256,6 +256,68 @@ final class DemoDataTests: XCTestCase {
         let ids = Set(DemoData.dogs.map(\.id))
         XCTAssertFalse(events.isEmpty)
         XCTAssertTrue(events.allSatisfy { $0.date < now && ids.contains($0.dogID) })
-        XCTAssertNil(WalkLog.walkInProgress(dog: DemoData.ohagiID, in: events, now: now))
+        XCTAssertNotNil(WalkLog.walkInProgress(dog: DemoData.ohagiID, in: events, now: now))
+        XCTAssertNil(WalkLog.walkInProgress(dog: DemoData.kinakoID, in: events, now: now))
+        XCTAssertGreaterThan(Walks.summaries(events: events, calendar: Calendar(identifier: .gregorian)).count, 15)
+    }
+}
+
+final class WalksTests: XCTestCase {
+    let tokyo: Calendar = {
+        var c = Calendar(identifier: .gregorian)
+        c.timeZone = TimeZone(identifier: "Asia/Tokyo")!
+        return c
+    }()
+    let a = UUID(), b = UUID()
+    let t = Date(timeIntervalSince1970: 1_794_783_000) // 2026-11-16 07:50 JST
+
+    func at(_ m: Double) -> Date { t.addingTimeInterval(m * 60) }
+
+    func testPairsAndJoinsDogsWalkingTogether() {
+        var e = WalkLog.makeEvents(kind: .walkStart, dogIDs: [a, b], date: at(0), author: "")
+        e += WalkLog.makeEvents(kind: .pee, dogIDs: [a, b], date: at(5), author: "")
+        e += WalkLog.makeEvents(kind: .walkEnd, dogIDs: [a, b], date: at(32), author: "")
+        e += WalkLog.makeEvents(kind: .walkStart, dogIDs: [a], date: at(300), author: "")
+        let s = Walks.sessions(in: e)
+        XCTAssertEqual(s.count, 2)
+        XCTAssertNil(s[0].end) // still walking (or forgotten)
+        XCTAssertEqual(s[1].dogIDs.count, 2)
+        XCTAssertEqual(s[1].minutes, 32)
+        XCTAssertEqual(s[1].eventIDs.count, 4)
+    }
+
+    func testForgottenEndAndTooLongEnd() {
+        let e = [
+            WalkEvent(dogID: a, kind: .walkStart, date: at(0)),
+            WalkEvent(dogID: a, kind: .walkStart, date: at(60)), // the first one had no end
+            WalkEvent(dogID: a, kind: .walkEnd, date: at(90)),
+            WalkEvent(dogID: a, kind: .walkStart, date: at(200)),
+            WalkEvent(dogID: a, kind: .walkEnd, date: at(200 + 5 * 60)), // 5 hours: not a walk
+            WalkEvent(dogID: a, kind: .walkEnd, date: at(999)), // end with no start: ignored
+        ]
+        let s = Walks.sessions(in: e)
+        XCTAssertEqual(s.map(\.minutes), [nil, 30, nil])
+    }
+
+    func testTimelineAndSummary() {
+        var e = WalkLog.makeEvents(kind: .walkStart, dogIDs: [a, b], date: at(0), author: "")
+        e += WalkLog.makeEvents(kind: .pee, dogIDs: [a, b], date: at(5), author: "")
+        e += WalkLog.makeEvents(kind: .poop, dogIDs: [a], date: at(10), author: "")
+        e += WalkLog.makeEvents(kind: .walkEnd, dogIDs: [a, b], date: at(25), author: "")
+        e += WalkLog.makeEvents(kind: .walkStart, dogIDs: [a], date: at(600), author: "")
+        e += WalkLog.makeEvents(kind: .walkEnd, dogIDs: [a], date: at(620), author: "")
+        e += WalkLog.makeEvents(kind: .pee, dogIDs: [a], date: at(60 * 24), author: "") // next day
+        let items = Walks.timeline(on: t, events: e, calendar: tokyo)
+        XCTAssertEqual(items.count, 4) // two walks, one pee tap (two dogs), one poop
+        if case .tap(let pee) = items[2] { XCTAssertEqual(pee.count, 2) } else { XCTFail() }
+        let sum = Walks.summaries(events: e, calendar: tokyo)
+        let today = sum[tokyo.startOfDay(for: t)]!
+        XCTAssertEqual(today.walks, 2)
+        XCTAssertEqual(today.walkMinutes, 45)
+        XCTAssertEqual(today.taps[.pee], 1)
+        XCTAssertEqual(Walks.walkText(today), "おさんぽ 2回・45分")
+        XCTAssertEqual(sum.count, 2)
+        XCTAssertEqual(Walks.walkText(DaySummary(day: t)), "おさんぽ なし")
+        XCTAssertEqual(WalkLog.durationText(minutes: 70), "1時間10分")
     }
 }
